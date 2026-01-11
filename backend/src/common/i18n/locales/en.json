@@ -1,0 +1,27 @@
+{
+  "bot": {
+    "welcome": "Hello, {{name}}! Welcome to Postcard Bot - an AI-powered image generation bot.",
+    "welcome_registered": "Welcome back, {{name}}!",
+    "balance": "Your balance: {{balance}} RUB.",
+    "balance_empty": "Your balance is empty. Top up to generate images.",
+    "open_app": "Open Editor",
+    "help": "Available commands:\n/start - Start\n/balance - Check balance\n/app - Open editor\n/language - Change language\n/help - This help",
+    "language_changed": "Language changed to English.",
+    "choose_language": "Choose language:",
+    "age_required": "You must confirm that you are 18 years or older to use this bot.",
+    "age_confirmed": "Age confirmed. You can now use all bot features.",
+    "blocked": "Your account is blocked. Contact support.",
+    "error": "An error occurred. Please try again later.",
+    "not_enough_balance": "Insufficient balance.",
+    "generation_started": "Image generation started. Please wait...",
+    "generation_complete": "Your image is ready!",
+    "generation_failed": "Failed to generate image. Please try again later."
+  },
+  "buttons": {
+    "russian": "Русский",
+    "english": "English",
+    "confirm_age": "I am 18 or older",
+    "top_up": "Top up balance",
+    "history": "Generation history"
+  }
+}

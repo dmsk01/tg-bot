@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Postcard Bot",
+    "loading": "Loading..."
+  },
+  "nav": {
+    "editor": "Editor",
+    "history": "History",
+    "balance": "Balance",
+    "settings": "Settings"
+  },
+  "editor": {
+    "title": "Image Generator",
+    "selectModel": "Select model",
+    "selectTemplate": "Select template",
+    "noModels": "Models unavailable",
+    "noTemplates": "Templates unavailable",
+    "promptPlaceholder": "Describe the image you want to create...",
+    "negativePromptPlaceholder": "What to exclude from the image...",
+    "aspectRatio": "Aspect ratio",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "cost": "Cost: {{cost}} RUB",
+    "imageUploader": {
+      "label": "Source image",
+      "hint": "Upload a photo to edit or leave empty to generate from scratch",
+      "dropzone": "Drop image here or click to select",
+      "uploading": "Uploading...",
+      "remove": "Remove",
+      "invalidType": "Unsupported format. Use JPG, PNG or WebP",
+      "fileTooLarge": "File too large. Maximum 10MB"
+    }
+  },
+  "balance": {
+    "title": "Balance",
+    "current": "Current balance",
+    "topUp": "Top up",
+    "history": "Transaction history",
+    "amount": "{{amount}} RUB"
+  },
+  "history": {
+    "title": "Generation history",
+    "empty": "No generations yet",
+    "repeat": "Repeat",
+    "delete": "Delete"
+  },
+  "ageConfirm": {
+    "title": "Age confirmation",
+    "message": "You must confirm that you are 18 years or older to use this application.",
+    "confirm": "I am 18 or older",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "insufficientBalance": "Insufficient balance",
+    "generationFailed": "Failed to generate image"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back"
+  }
+}
