@@ -69,9 +69,9 @@ if (configService.isDevelopment) {
       target: 'http://localhost:5173',
       changeOrigin: true,
       ws: true, // WebSocket support for HMR
-      logLevel: 'silent',
+      logger: { ...console, log: () => {}, info: () => {}, warn: () => {}, error: () => {} }, // Silent mode
       // Don't proxy API, webhook, uploads, generated, health routes
-      filter: (pathname) => {
+      pathFilter: (pathname: string) => {
         return (
           !pathname.startsWith('/api') &&
           !pathname.startsWith('/webhook') &&

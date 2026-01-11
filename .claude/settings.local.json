@@ -27,7 +27,10 @@
       "Bash(lsof:*)",
       "Bash(xargs kill -9 lsof -ti:5174)",
       "Bash(xargs kill -9 sleep 1)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint)",
+      "Bash(npm view:*)",
+      "Bash(npx prisma:*)"
     ]
   }
 }

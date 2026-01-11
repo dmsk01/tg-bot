@@ -1,4 +1,4 @@
-import { Markup } from 'telegraf';
+import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { configService } from '../../common/config/config.service.js';
@@ -13,9 +13,8 @@ export async function appHandler(ctx: BotContext): Promise<void> {
   const lang = user.languageCode;
   const miniAppUrl = configService.telegram.miniAppUrl || 'https://example.com';
 
-  const keyboard = Markup.inlineKeyboard([
-    [Markup.button.webApp(t('bot.open_app', {}, lang), miniAppUrl)],
-  ]);
+  const keyboard = new InlineKeyboard()
+    .webApp(t('bot.open_app', {}, lang), miniAppUrl);
 
-  await ctx.reply(t('bot.open_app', {}, lang), keyboard);
+  await ctx.reply(t('bot.open_app', {}, lang), { reply_markup: keyboard });
 }

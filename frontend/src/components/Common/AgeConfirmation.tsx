@@ -13,6 +13,7 @@ export function AgeConfirmation() {
   return (
     <div className="modal-overlay">
       <div className="modal">
+        <div className="modal-handle" />
         <h2 className="modal-title">{t('ageConfirm.title')}</h2>
         <p className="modal-message">{t('ageConfirm.message')}</p>
         <div className="modal-actions">

@@ -70,7 +70,7 @@ postcard_bot/
 ### Backend
 
 - **Express 5** - современный web framework с улучшенной обработкой ошибок
-- **Telegraf** - типизированный Telegram Bot Framework
+- **grammY** - типизированный Telegram Bot Framework
 - **Prisma** - type-safe ORM с автогенерацией типов
 - **BullMQ** - очереди для асинхронной обработки генераций
 - **Winston** - структурированное логирование

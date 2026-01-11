@@ -1,4 +1,4 @@
-import { Context, MiddlewareFn } from 'telegraf';
+import { Context, MiddlewareFn } from 'grammy';
 import { userService } from '../../services/user.service.js';
 import { logger } from '../../common/utils/logger.util.js';
 import type { User } from '@prisma/client';

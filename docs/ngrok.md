@@ -42,12 +42,29 @@ Cloudflare Tunnel бесплатный, стабильный и не требу�
 
 ### Установка
 
+#### Windows 10/11
+
+1. Скачайте `cloudflared-windows-amd64.exe` с [GitHub Releases](https://github.com/cloudflare/cloudflared/releases/latest)
+2. Переименуйте в `cloudflared.exe` и поместите в папку проекта или в PATH
+
+Или через **winget**:
+```powershell
+winget install Cloudflare.cloudflared
+```
+
+Или через **Chocolatey**:
+```powershell
+choco install cloudflared
+```
+
+#### Ubuntu/Debian
+
 ```bash
-# Скачивание
+# Скачивание бинарника
 curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
 chmod +x cloudflared
 
-# Или через пакетный менеджер (Ubuntu/Debian)
+# Или через пакетный менеджер
 curl -L https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-archive-keyring.gpg >/dev/null
 echo "deb [signed-by=/usr/share/keyrings/cloudflare-archive-keyring.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
 sudo apt update && sudo apt install cloudflared
@@ -55,6 +72,12 @@ sudo apt update && sudo apt install cloudflared
 
 ### Запуск туннеля
 
+**Windows (PowerShell/CMD):**
+```powershell
+cloudflared tunnel --url http://localhost:3000
+```
+
+**Linux/macOS:**
 ```bash
 ./cloudflared tunnel --url http://localhost:3000
 ```
@@ -92,8 +115,24 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://xxxx.trycloudfl
 
 ### Установка
 
+#### Windows 10/11
+
+1. Скачайте с [ngrok.com/download](https://ngrok.com/download)
+2. Распакуйте `ngrok.exe` в папку проекта или в PATH
+
+Или через **winget**:
+```powershell
+winget install ngrok.ngrok
+```
+
+Или через **Chocolatey**:
+```powershell
+choco install ngrok
+```
+
+#### Ubuntu/Debian
+
 ```bash
-# Ubuntu/Debian
 curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
   | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
   && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
@@ -101,7 +140,7 @@ curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
   && sudo apt update \
   && sudo apt install ngrok
 
-# Snap
+# Или через Snap
 sudo snap install ngrok
 ```
 
@@ -111,12 +150,24 @@ sudo snap install ngrok
 2. Получите authtoken в личном кабинете
 3. Авторизуйте:
 
+**Windows (PowerShell/CMD):**
+```powershell
+ngrok config add-authtoken YOUR_AUTH_TOKEN
+```
+
+**Linux/macOS:**
 ```bash
 ngrok config add-authtoken YOUR_AUTH_TOKEN
 ```
 
 ### Запуск
 
+**Windows (PowerShell/CMD):**
+```powershell
+ngrok http 3000
+```
+
+**Linux/macOS:**
 ```bash
 ngrok http 3000
 ```

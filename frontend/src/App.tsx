@@ -45,8 +45,9 @@ function App() {
       if (tg) {
         tg.ready();
         tg.expand();
-        tg.setHeaderColor('#1a1a2e');
-        tg.setBackgroundColor('#16213e');
+        // Use Telegram theme colors (auto light/dark)
+        tg.setHeaderColor('secondary_bg_color');
+        tg.setBackgroundColor('bg_color');
 
         // Set init data for API
         if (tg.initData) {
@@ -102,7 +103,7 @@ function App() {
           position="bottom-center"
           autoClose={3000}
           hideProgressBar
-          theme="dark"
+          theme="colored"
         />
       </div>
     </BrowserRouter>

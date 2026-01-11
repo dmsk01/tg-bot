@@ -1,4 +1,4 @@
-import { Markup } from 'telegraf';
+import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { configService } from '../../common/config/config.service.js';
@@ -18,19 +18,17 @@ export async function startHandler(ctx: BotContext): Promise<void> {
   const message = t(welcomeKey, { name }, lang);
 
   // Build keyboard buttons
-  const buttons = [];
+  const keyboard = new InlineKeyboard();
 
   // Mini App button only works with HTTPS URLs (Telegram requirement)
   const miniAppUrl = configService.telegram.miniAppUrl;
   if (miniAppUrl && miniAppUrl.startsWith('https://')) {
-    buttons.push([Markup.button.webApp(t('bot.open_app', {}, lang), miniAppUrl)]);
+    keyboard.webApp(t('bot.open_app', {}, lang), miniAppUrl).row();
   }
 
-  buttons.push([Markup.button.callback(t('buttons.top_up', {}, lang), 'top_up')]);
+  keyboard.text(t('buttons.top_up', {}, lang), 'top_up');
 
-  const keyboard = Markup.inlineKeyboard(buttons);
-
-  await ctx.reply(message, keyboard);
+  await ctx.reply(message, { reply_markup: keyboard });
 
   // If new user, show balance
   if (isNewUser) {

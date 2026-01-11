@@ -1,4 +1,4 @@
-import { Markup } from 'telegraf';
+import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { userService } from '../../services/user.service.js';
@@ -11,12 +11,12 @@ export async function languageHandler(ctx: BotContext): Promise<void> {
   }
 
   const lang = user.languageCode;
-  const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback(t('buttons.russian', {}, lang), 'lang_ru')],
-    [Markup.button.callback(t('buttons.english', {}, lang), 'lang_en')],
-  ]);
+  const keyboard = new InlineKeyboard()
+    .text(t('buttons.russian', {}, lang), 'lang_ru')
+    .row()
+    .text(t('buttons.english', {}, lang), 'lang_en');
 
-  await ctx.reply(t('bot.choose_language', {}, lang), keyboard);
+  await ctx.reply(t('bot.choose_language', {}, lang), { reply_markup: keyboard });
 }
 
 export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
@@ -29,6 +29,6 @@ export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
   const newLang = data === 'lang_ru' ? 'ru' : 'en';
 
   await userService.updateLanguage(user.id, newLang);
-  await ctx.answerCbQuery();
+  await ctx.answerCallbackQuery();
   await ctx.reply(t('bot.language_changed', {}, newLang));
 }

@@ -26,6 +26,42 @@ language - Сменить язык
 help - Помощь
 ```
 
+## Фреймворк grammY
+
+Бот использует [grammY](https://grammy.dev/) — современный TypeScript фреймворк для Telegram ботов.
+
+### Особенности grammY
+
+**Webhook режим требует инициализации:**
+```typescript
+// В webhook режиме нужно вызвать bot.init() перед обработкой запросов
+await bot.init();
+await bot.api.setWebhook(webhookUrl);
+```
+
+**Основные отличия от Telegraf:**
+| Telegraf | grammY |
+|----------|--------|
+| `bot.action(pattern, handler)` | `bot.callbackQuery(pattern, handler)` |
+| `bot.launch()` | `bot.start()` |
+| `Markup.inlineKeyboard([...])` | `new InlineKeyboard().text().row()` |
+| `ctx.reply(msg, keyboard)` | `ctx.reply(msg, { reply_markup: keyboard })` |
+| `ctx.answerCbQuery()` | `ctx.answerCallbackQuery()` |
+| `bot.telegram.setWebhook()` | `bot.api.setWebhook()` |
+
+**Пример создания клавиатуры:**
+```typescript
+import { InlineKeyboard } from 'grammy';
+
+const keyboard = new InlineKeyboard()
+  .text('Кнопка 1', 'callback_1')
+  .row()
+  .text('Кнопка 2', 'callback_2')
+  .webApp('Открыть приложение', 'https://example.com');
+
+await ctx.reply('Выберите действие:', { reply_markup: keyboard });
+```
+
 ## Структура кода
 
 ```

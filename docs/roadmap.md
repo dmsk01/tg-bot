@@ -83,7 +83,7 @@ npm run prisma:studio       # Открыть Prisma Studio
 
 **Задачи:**
 1. Создать бота через @BotFather
-2. Настроить Telegraf в `bot.service.ts`
+2. Настроить grammY в `bot.service.ts`
 3. Реализовать команды:
    - `/start` - регистрация пользователя, приветствие
    - `/balance` - показать баланс

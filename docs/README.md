@@ -42,7 +42,7 @@
 | Node.js | 20.x | Runtime |
 | TypeScript | 5.8.x | Язык программирования |
 | Express.js | 5.1.x | Web framework |
-| Telegraf | 4.16.x | Telegram Bot Framework |
+| grammY | 1.39.x | Telegram Bot Framework |
 | PostgreSQL | 14+ | База данных |
 | Prisma ORM | 6.9.x | ORM |
 | BullMQ | 5.66.x | Система очередей |
