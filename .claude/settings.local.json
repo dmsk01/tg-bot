@@ -30,7 +30,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(npm view:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(netsh interface ipv4 show excludedportrange:*)"
     ]
   }
 }

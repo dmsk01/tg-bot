@@ -9,13 +9,13 @@ export function TemplateSelector() {
   const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (!hasFetched.current && templates.length === 0) {
+    if (!hasFetched.current && (!templates || templates.length === 0)) {
       hasFetched.current = true;
       fetchTemplates();
     }
-  }, [templates.length, fetchTemplates]);
+  }, [templates, fetchTemplates]);
 
-  if (isLoadingTemplates) {
+  if (isLoadingTemplates || !templates) {
     return <div className="selector-loading">{t('app.loading')}</div>;
   }
 
