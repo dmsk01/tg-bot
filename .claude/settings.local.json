@@ -31,7 +31,10 @@
       "Bash(npm run lint)",
       "Bash(npm view:*)",
       "Bash(npx prisma:*)",
-      "Bash(netsh interface ipv4 show excludedportrange:*)"
+      "Bash(netsh interface ipv4 show excludedportrange:*)",
+      "Bash(yarn add zustand i18next react-i18next notistack @telegram-apps/sdk-react)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:fix:*)"
     ]
   }
 }

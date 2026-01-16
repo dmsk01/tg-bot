@@ -1,0 +1,149 @@
+import 'src/global.css';
+import 'src/i18n/i18n';
+
+import { Suspense, useEffect } from 'react';
+import { SnackbarProvider } from 'notistack';
+import { useTranslation } from 'react-i18next';
+
+import Box from '@mui/material/Box';
+
+import { usePathname } from 'src/routes/hooks';
+
+import { useStore } from 'src/store/store';
+import { apiService } from 'src/services/api.service';
+import { themeConfig, ThemeProvider } from 'src/theme';
+
+import { ProgressBar } from 'src/components/progress-bar';
+import { MotionLazy } from 'src/components/animate/motion-lazy';
+import { defaultSettings, SettingsProvider } from 'src/components/settings';
+
+import { Header, Navigation } from 'src/sections/layout';
+import { Loader, AgeConfirmation } from 'src/sections/common';
+
+// ----------------------------------------------------------------------
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        initData: string;
+        initDataUnsafe: {
+          user?: {
+            id: number;
+            language_code?: string;
+          };
+        };
+        ready: () => void;
+        expand: () => void;
+        setHeaderColor: (color: string) => void;
+        setBackgroundColor: (color: string) => void;
+      };
+    };
+  }
+}
+
+type AppProps = {
+  children: React.ReactNode;
+};
+
+export default function App({ children }: AppProps) {
+  const { i18n } = useTranslation();
+  const { user, isLoading, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
+
+  useScrollToTop();
+
+  useEffect(() => {
+    const initApp = async () => {
+      // Initialize Telegram WebApp
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('secondary_bg_color');
+        tg.setBackgroundColor('bg_color');
+
+        if (tg.initData) {
+          apiService.setInitData(tg.initData);
+        }
+
+        const userLang = tg.initDataUnsafe.user?.language_code;
+        if (userLang) {
+          i18n.changeLanguage(userLang.startsWith('en') ? 'en' : 'ru');
+        }
+      }
+
+      await fetchUser();
+    };
+
+    initApp();
+  }, [fetchUser, i18n]);
+
+  useEffect(() => {
+    if (user && !user.isAgeConfirmed) {
+      setShowAgeConfirmModal(true);
+    }
+
+    if (user?.languageCode) {
+      i18n.changeLanguage(user.languageCode);
+    }
+  }, [user, setShowAgeConfirmModal, i18n]);
+
+  return (
+    <SettingsProvider defaultSettings={defaultSettings}>
+      <ThemeProvider
+        modeStorageKey={themeConfig.modeStorageKey}
+        defaultMode={themeConfig.defaultMode}
+      >
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <MotionLazy>
+            <ProgressBar />
+
+            {isLoading ? (
+              <Loader />
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '100vh',
+                }}
+              >
+                <Header />
+                <Box
+                  component="main"
+                  sx={{
+                    flexGrow: 1,
+                    pt: 8,
+                    pb: 10,
+                  }}
+                >
+                  <Suspense fallback={<Loader />}>
+                    {children}
+                  </Suspense>
+                </Box>
+                <Navigation />
+              </Box>
+            )}
+
+            {showAgeConfirmModal && <AgeConfirmation />}
+          </MotionLazy>
+        </SnackbarProvider>
+      </ThemeProvider>
+    </SettingsProvider>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function useScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
