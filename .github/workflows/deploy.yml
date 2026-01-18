@@ -130,7 +130,7 @@ jobs:
     # Environment protection rules (опционально - настраивается в GitHub)
     environment:
       name: production
-      url: ${{ secrets.APP_URL }}
+      url: https://poct-card.ru
 
     steps:
       # -----------------------------------------------------------------------
