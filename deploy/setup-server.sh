@@ -175,9 +175,9 @@ apt install -y redis-server
 # Настройка Redis для production
 sed -i 's/supervised no/supervised systemd/' /etc/redis/redis.conf
 
-# Перезапуск Redis
-systemctl restart redis
-systemctl enable redis
+# Перезапуск Redis (в Ubuntu служба называется redis-server)
+systemctl restart redis-server || systemctl restart redis || true
+systemctl enable redis-server || systemctl enable redis || true
 
 log_info "Redis установлен"
 
