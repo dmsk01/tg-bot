@@ -1,0 +1,153 @@
+# =============================================================================
+# Docker Compose для PostgreSQL и Redis
+# =============================================================================
+# Этот файл используется ОПЦИОНАЛЬНО, если вы хотите запускать БД через Docker
+# вместо установки напрямую на сервер.
+#
+# Преимущества Docker:
+#   - Изоляция сервисов
+#   - Легкое обновление версий
+#   - Портативность
+#
+# Использование:
+#   docker-compose up -d              # Запуск
+#   docker-compose down               # Остановка
+#   docker-compose logs -f postgres   # Логи PostgreSQL
+#   docker-compose exec postgres psql -U postcard_bot  # Подключение к БД
+#
+# ВАЖНО: Если используете Docker, измените DATABASE_URL и REDIS_URL в .env
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: postcard-postgres
+
+    # Перезапуск при падении
+    restart: unless-stopped
+
+    # Переменные окружения
+    environment:
+      # ВАЖНО: Замените на безопасные значения!
+      POSTGRES_USER: ${POSTGRES_USER:-postcard_bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_STRONG_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-postcard_bot}
+
+      # Локаль для корректной работы с русским текстом
+      LANG: ru_RU.utf8
+      LC_ALL: ru_RU.utf8
+
+    # Порты (для локального доступа)
+    # Можно закомментировать если нужен только внутренний доступ
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    # Volumes для персистентности данных
+    volumes:
+      # Данные PostgreSQL
+      - postgres_data:/var/lib/postgresql/data
+
+      # Скрипты инициализации (выполняются при первом запуске)
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postcard_bot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    # Ограничение ресурсов
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+    # Сеть
+    networks:
+      - app-network
+
+  # ---------------------------------------------------------------------------
+  # Redis (для BullMQ очередей)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: postcard-redis
+
+    restart: unless-stopped
+
+    # Команда с настройками
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+
+    # Порты
+    ports:
+      - "127.0.0.1:6379:6379"
+
+    # Volumes
+    volumes:
+      - redis_data:/data
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    # Ресурсы
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+
+    networks:
+      - app-network
+
+  # ---------------------------------------------------------------------------
+  # Adminer (опциональный веб-интерфейс для БД)
+  # ---------------------------------------------------------------------------
+  # Раскомментируйте если нужен веб-доступ к БД
+  # adminer:
+  #   image: adminer:latest
+  #   container_name: postcard-adminer
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:8080:8080"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    name: postcard_postgres_data
+
+  redis_data:
+    driver: local
+    name: postcard_redis_data
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  app-network:
+    driver: bridge
+    name: postcard_network
