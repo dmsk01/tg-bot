@@ -1,6 +1,7 @@
-import { StateCreator } from 'zustand';
-import type { User, UserSettings } from '@/types';
-import { apiService } from '@/services/api.service';
+import type { StateCreator } from 'zustand';
+import type { User, UserSettings } from 'src/types';
+
+import { apiService } from 'src/services/api.service';
 
 export interface UserSlice {
   user: User | null;

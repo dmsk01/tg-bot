@@ -1,14 +1,16 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import type { AxiosError, AxiosInstance } from 'axios';
 import type {
-  ApiResponse,
   User,
-  UserSettings,
-  Template,
   AiModel,
+  Template,
   Generation,
-  PaginatedResponse,
+  ApiResponse,
   AspectRatio,
-} from '@/types';
+  UserSettings,
+  PaginatedResponse,
+} from 'src/types';
+
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -121,10 +123,7 @@ class ApiService {
     return response.data.data!;
   }
 
-  async getGenerationHistory(
-    page = 1,
-    limit = 10
-  ): Promise<PaginatedResponse<Generation>> {
+  async getGenerationHistory(page = 1, limit = 10): Promise<PaginatedResponse<Generation>> {
     const response = await this.client.get<ApiResponse<PaginatedResponse<Generation>>>(
       '/generation/history',
       { params: { page, limit } }

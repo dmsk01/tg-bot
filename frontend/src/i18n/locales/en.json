@@ -20,6 +20,7 @@
     "aspectRatio": "Aspect ratio",
     "generate": "Generate",
     "generating": "Generating...",
+    "generationComplete": "Image generated successfully!",
     "cost": "Cost: {{cost}} RUB",
     "imageUploader": {
       "label": "Source image",
@@ -60,5 +61,11 @@
     "cancel": "Cancel",
     "close": "Close",
     "back": "Back"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
   }
 }

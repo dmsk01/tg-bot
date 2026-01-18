@@ -1,18 +1,26 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import 'src/global.css';
+import 'src/i18n/i18n';
+
+import { Suspense, useEffect } from 'react';
+import { SnackbarProvider } from 'notistack';
 import { useTranslation } from 'react-i18next';
-import { Header } from '@/components/Layout/Header';
-import { Navigation } from '@/components/Layout/Navigation';
-import { Loader } from '@/components/Common/Loader';
-import { AgeConfirmation } from '@/components/Common/AgeConfirmation';
-import { EditorPage } from '@/pages/EditorPage';
-import { HistoryPage } from '@/pages/HistoryPage';
-import { BalancePage } from '@/pages/BalancePage';
-import { useStore } from '@/store/store';
-import { apiService } from '@/services/api.service';
-import 'react-toastify/dist/ReactToastify.css';
-import '@/styles/main.css';
+
+import Box from '@mui/material/Box';
+
+import { usePathname } from 'src/routes/hooks';
+
+import { useStore } from 'src/store/store';
+import { apiService } from 'src/services/api.service';
+import { themeConfig, ThemeProvider } from 'src/theme';
+
+import { ProgressBar } from 'src/components/progress-bar';
+import { MotionLazy } from 'src/components/animate/motion-lazy';
+import { defaultSettings, SettingsProvider } from 'src/components/settings';
+
+import { Header, Navigation } from 'src/sections/layout';
+import { Loader, AgeConfirmation } from 'src/sections/common';
+
+// ----------------------------------------------------------------------
 
 declare global {
   interface Window {
@@ -34,9 +42,15 @@ declare global {
   }
 }
 
-function App() {
+type AppProps = {
+  children: React.ReactNode;
+};
+
+export default function App({ children }: AppProps) {
   const { i18n } = useTranslation();
   const { user, isLoading, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
+
+  useScrollToTop();
 
   useEffect(() => {
     const initApp = async () => {
@@ -45,23 +59,19 @@ function App() {
       if (tg) {
         tg.ready();
         tg.expand();
-        // Use Telegram theme colors (auto light/dark)
         tg.setHeaderColor('secondary_bg_color');
         tg.setBackgroundColor('bg_color');
 
-        // Set init data for API
         if (tg.initData) {
           apiService.setInitData(tg.initData);
         }
 
-        // Set language from Telegram
         const userLang = tg.initDataUnsafe.user?.language_code;
         if (userLang) {
           i18n.changeLanguage(userLang.startsWith('en') ? 'en' : 'ru');
         }
       }
 
-      // Fetch user data
       await fetchUser();
     };
 
@@ -69,45 +79,71 @@ function App() {
   }, [fetchUser, i18n]);
 
   useEffect(() => {
-    // Check if age confirmation is needed
     if (user && !user.isAgeConfirmed) {
       setShowAgeConfirmModal(true);
     }
 
-    // Update language from user settings
     if (user?.languageCode) {
       i18n.changeLanguage(user.languageCode);
     }
   }, [user, setShowAgeConfirmModal, i18n]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   return (
-    <BrowserRouter>
-      <div className="app">
-        <Header />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<EditorPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/balance" element={<BalancePage />} />
-          </Routes>
-        </main>
-        <Navigation />
+    <SettingsProvider defaultSettings={defaultSettings}>
+      <ThemeProvider
+        modeStorageKey={themeConfig.modeStorageKey}
+        defaultMode={themeConfig.defaultMode}
+      >
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <MotionLazy>
+            <ProgressBar />
 
-        {showAgeConfirmModal && <AgeConfirmation />}
+            {isLoading ? (
+              <Loader />
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '100vh',
+                }}
+              >
+                <Header />
+                <Box
+                  component="main"
+                  sx={{
+                    flexGrow: 1,
+                    pt: 8,
+                    pb: 10,
+                  }}
+                >
+                  <Suspense fallback={<Loader />}>
+                    {children}
+                  </Suspense>
+                </Box>
+                <Navigation />
+              </Box>
+            )}
 
-        <ToastContainer
-          position="bottom-center"
-          autoClose={3000}
-          hideProgressBar
-          theme="colored"
-        />
-      </div>
-    </BrowserRouter>
+            {showAgeConfirmModal && <AgeConfirmation />}
+          </MotionLazy>
+        </SnackbarProvider>
+      </ThemeProvider>
+    </SettingsProvider>
   );
 }
 
-export default App;
+// ----------------------------------------------------------------------
+
+function useScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}

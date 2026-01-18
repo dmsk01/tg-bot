@@ -1,6 +1,7 @@
-import { StateCreator } from 'zustand';
-import type { Generation, Template, AiModel, AspectRatio } from '@/types';
-import { apiService } from '@/services/api.service';
+import type { StateCreator } from 'zustand';
+import type { AiModel, Template, Generation, AspectRatio } from 'src/types';
+
+import { apiService } from 'src/services/api.service';
 
 export interface GenerationSlice {
   // Editor state
@@ -121,7 +122,8 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
   },
 
   createGeneration: async () => {
-    const { selectedModel, prompt, negativePrompt, selectedTemplate, aspectRatio, sourceImageUrl } = get();
+    const { selectedModel, prompt, negativePrompt, selectedTemplate, aspectRatio, sourceImageUrl } =
+      get();
 
     if (!prompt.trim()) {
       return null;

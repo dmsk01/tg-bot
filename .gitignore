@@ -30,6 +30,12 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # IDE
+.claude/
+cloudflared
+cloudflared.exe
+*.pem
+tunnel.json
+tunnel.yml
 .idea/
 .vscode/settings.json
 .vscode/launch.json
