@@ -54,6 +54,7 @@ const importRules = () => ({
   'import/export': 0,
   'import/default': 0,
   'import/namespace': 0,
+  'import/no-unresolved': 0, // TypeScript handles this
   'import/no-named-as-default': 0,
   'import/newline-after-import': 2,
   'import/no-named-as-default-member': 0,
