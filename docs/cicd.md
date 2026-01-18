@@ -61,14 +61,23 @@ ssh root@your-server-ip
 
 ```bash
 # Скачиваем и запускаем скрипт
-curl -O https://raw.githubusercontent.com/your-repo/main/deploy/setup-server.sh
+curl -O https://raw.githubusercontent.com/dmsk01/tg-bot/main/deploy/setup-server.sh
 chmod +x setup-server.sh
 
 # ВАЖНО: Отредактируйте переменные в начале скрипта!
 nano setup-server.sh
+```
 
+В начале файла измените:
+```bash
+DOMAIN="poct-card.ru"              # Ваш домен
+APP_USER="root"                     # Или создайте пользователя deploy
+DB_PASSWORD="сложный_пароль"        # Пароль для PostgreSQL
+```
+
+```bash
 # Запускаем
-sudo ./setup-server.sh
+./setup-server.sh
 ```
 
 Скрипт установит:
@@ -78,8 +87,9 @@ sudo ./setup-server.sh
 - Redis
 - Nginx
 - Certbot (Let's Encrypt)
-- Создаст пользователя `deploy`
 - Настроит файервол (UFW)
+
+> **Примечание:** Если скрипт прервался, см. раздел "Ручная настройка" ниже.
 
 #### 1.3 Генерация SSH ключа для GitHub Actions
 
@@ -107,12 +117,14 @@ ssh -i ~/.ssh/github_actions_deploy deploy@your-server-ip
 #### 2.2 Получение SSL сертификата
 
 ```bash
-# На сервере
-cd /tmp
-curl -O https://raw.githubusercontent.com/your-repo/main/deploy/ssl-setup.sh
-chmod +x ssl-setup.sh
+# Простой способ (рекомендуется)
+certbot --nginx -d poct-card.ru --non-interactive --agree-tos --email your@email.com
 
-sudo ./ssl-setup.sh your-domain.com your@email.com
+# Или через скрипт
+cd /tmp
+curl -O https://raw.githubusercontent.com/dmsk01/tg-bot/main/deploy/ssl-setup.sh
+chmod +x ssl-setup.sh
+./ssl-setup.sh poct-card.ru your@email.com
 ```
 
 ### Этап 3: Настройка GitHub Secrets
@@ -387,6 +399,112 @@ npm audit
 # Автоматическое исправление
 npm audit fix
 ```
+
+## Ручная настройка (если скрипт прервался)
+
+Если `setup-server.sh` прервался, выполните оставшиеся шаги вручную:
+
+### 1. Создание директорий
+
+```bash
+mkdir -p /var/www/postcard-bot/{backend,frontend,logs,uploads,generated}
+mkdir -p /var/www/backups
+```
+
+### 2. Установка Nginx и Certbot
+
+```bash
+apt install -y nginx certbot python3-certbot-nginx
+systemctl enable nginx
+systemctl start nginx
+```
+
+### 3. Получение SSL сертификата
+
+```bash
+certbot --nginx -d poct-card.ru --non-interactive --agree-tos --email your@email.com
+```
+
+### 4. Настройка Nginx
+
+```bash
+nano /etc/nginx/sites-available/postcard-bot
+```
+
+Содержимое:
+```nginx
+upstream backend {
+    server 127.0.0.1:3000;
+    keepalive 64;
+}
+
+server {
+    listen 80;
+    server_name poct-card.ru;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name poct-card.ru;
+
+    ssl_certificate /etc/letsencrypt/live/poct-card.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/poct-card.ru/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    root /var/www/postcard-bot/frontend/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /webhook {
+        proxy_pass http://backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+Активируйте:
+```bash
+ln -sf /etc/nginx/sites-available/postcard-bot /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+```
+
+### 5. Создание .env файла
+
+```bash
+nano /var/www/postcard-bot/backend/.env
+```
+
+## Известные проблемы
+
+### Redis service name на Ubuntu 24
+
+На Ubuntu 24 служба Redis называется `redis-server`, а не `redis`. Скрипт автоматически обрабатывает оба варианта.
+
+### ESLint import/no-unresolved на CI
+
+На Linux CI файловая система case-sensitive. Правило `import/no-unresolved` отключено, так как TypeScript уже проверяет импорты.
 
 ## Troubleshooting
 
