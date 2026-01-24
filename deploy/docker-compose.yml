@@ -64,7 +64,6 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
-    image: postcard-backend:latest
     container_name: postcard-backend
     restart: unless-stopped
     env_file:
