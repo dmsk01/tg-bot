@@ -200,6 +200,7 @@ jobs:
 
           # Перезапускаем сервисы
           echo "Restarting services..."
+          docker compose up -d --force-recreate nginx
           docker compose up -d
 
           # Ждем готовности
