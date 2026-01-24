@@ -16,6 +16,22 @@ X-Telegram-Init-Data: <initData из Telegram WebApp>
 
 ## Эндпоинты
 
+### Health Check
+
+#### GET /api/health
+Проверка работоспособности сервера.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-01-24T12:00:00.000Z",
+  "environment": "production"
+}
+```
+
+---
+
 ### User API
 
 #### GET /api/user/me
