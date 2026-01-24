@@ -65,18 +65,26 @@ export default function App({ children }: AppProps) {
         if (tg.initData) {
           apiService.setInitData(tg.initData);
         }
-
-        const userLang = tg.initDataUnsafe.user?.language_code;
-        if (userLang) {
-          i18n.changeLanguage(userLang.startsWith('en') ? 'en' : 'ru');
-        }
       }
 
       await fetchUser();
     };
 
     initApp();
-  }, [fetchUser, i18n]);
+
+    // Refresh user data when Mini App becomes visible (handles cached app reopening)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUser();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchUser]);
 
   useEffect(() => {
     if (user && !user.isAgeConfirmed) {
