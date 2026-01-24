@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import type { AuthenticatedRequest } from '../middlewares/validate-telegram.middleware.js';
 import { userService } from '../../services/user.service.js';
+import { botService } from '../../bot/bot.service.js';
 
 export class UserController {
   async getMe(req: AuthenticatedRequest, res: Response): Promise<void> {
@@ -67,6 +68,9 @@ export class UserController {
     }
 
     const user = await userService.updateLanguage(req.user!.id, languageCode);
+
+    // Update bot command menu for this user
+    await botService.setUserCommands(Number(req.user!.telegramId), languageCode);
 
     res.json({
       success: true,
