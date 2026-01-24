@@ -222,13 +222,16 @@ docker compose logs nginx
 
 ### Автообновление
 
-Certbot автоматически обновляет сертификаты. Hook для перезагрузки Nginx:
+Certbot использует standalone режим. Конфиг `/etc/letsencrypt/renewal/*.conf` содержит hooks:
 
-```bash
-# /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
-#!/bin/bash
-docker exec postcard-nginx nginx -s reload
+```ini
+[renewalparams]
+authenticator = standalone
+pre_hook = docker stop postcard-nginx
+post_hook = docker start postcard-nginx
 ```
+
+При обновлении Certbot автоматически останавливает Nginx, получает сертификат и запускает Nginx обратно.
 
 ### Ручное обновление
 
@@ -236,11 +239,11 @@ docker exec postcard-nginx nginx -s reload
 # Проверка
 certbot certificates
 
-# Обновление
-certbot renew --force-renewal
+# Тест обновления
+certbot renew --dry-run
 
-# Перезагрузка Nginx
-docker exec postcard-nginx nginx -s reload
+# Принудительное обновление
+certbot renew --force-renewal
 ```
 
 ## Rollback

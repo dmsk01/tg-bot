@@ -302,15 +302,28 @@ fi
 # =============================================================================
 log_info "Шаг 12: Настройка автообновления SSL..."
 
-mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+# Обновляем конфиг certbot для standalone режима
+RENEWAL_CONF=$(ls /etc/letsencrypt/renewal/*.conf 2>/dev/null | head -1)
 
-cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh << 'EOF'
-#!/bin/bash
-docker exec postcard-nginx nginx -s reload
-EOF
+if [ -n "$RENEWAL_CONF" ]; then
+    log_info "Обновление $RENEWAL_CONF для Docker..."
 
-chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
-log_info "SSL renewal hook настроен"
+    # Меняем authenticator на standalone и добавляем hooks
+    sed -i 's/authenticator = nginx/authenticator = standalone/' "$RENEWAL_CONF"
+    sed -i '/^installer/d' "$RENEWAL_CONF"
+
+    # Добавляем pre/post hooks если их нет
+    if ! grep -q "pre_hook" "$RENEWAL_CONF"; then
+        echo "pre_hook = docker stop postcard-nginx" >> "$RENEWAL_CONF"
+    fi
+    if ! grep -q "post_hook" "$RENEWAL_CONF"; then
+        echo "post_hook = docker start postcard-nginx" >> "$RENEWAL_CONF"
+    fi
+
+    log_info "Certbot настроен для Docker"
+else
+    log_warn "Конфиг certbot не найден, настройте SSL вручную"
+fi
 
 # =============================================================================
 # Завершение

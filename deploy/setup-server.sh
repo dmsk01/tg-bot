@@ -178,21 +178,21 @@ chown -R $APP_USER:$APP_USER /home/$APP_USER/.ssh
 log_warn "ВАЖНО: Добавьте публичный SSH ключ в /home/$APP_USER/.ssh/authorized_keys"
 
 # =============================================================================
-# 9. Настройка автообновления SSL сертификатов
+# 9. Настройка SSL (инструкции)
 # =============================================================================
-log_info "Настройка автообновления SSL..."
+log_info "Инструкции по настройке SSL..."
 
-mkdir -p /etc/letsencrypt/renewal-hooks/deploy
-
-cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh << 'EOF'
-#!/bin/bash
-# Перезагрузка Nginx в Docker после обновления сертификата
-docker exec postcard-nginx nginx -s reload 2>/dev/null || true
-EOF
-
-chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
-
-log_info "Hook для автообновления SSL создан"
+echo ""
+log_warn "После получения SSL сертификата отредактируйте:"
+log_warn "  /etc/letsencrypt/renewal/YOUR_DOMAIN.conf"
+echo ""
+log_warn "Замените секцию [renewalparams] на:"
+echo "  [renewalparams]"
+echo "  authenticator = standalone"
+echo "  pre_hook = docker stop postcard-nginx"
+echo "  post_hook = docker start postcard-nginx"
+echo ""
+log_warn "Проверка: certbot renew --dry-run"
 
 # =============================================================================
 # 10. Создание шаблонов конфигурации

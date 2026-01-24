@@ -137,13 +137,20 @@ docker compose up -d
 
 ### Автоматическое обновление
 
-Certbot автоматически обновляет сертификаты. После обновления нужно перезагрузить Nginx в контейнере.
+Certbot использует standalone режим с автоматической остановкой/запуском Nginx.
 
-Hook уже настроен в `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`:
+Конфиг `/etc/letsencrypt/renewal/poct-card.ru.conf` должен содержать:
 
+```ini
+[renewalparams]
+authenticator = standalone
+pre_hook = docker stop postcard-nginx
+post_hook = docker start postcard-nginx
+```
+
+Проверка:
 ```bash
-#!/bin/bash
-docker exec postcard-nginx nginx -s reload
+certbot renew --dry-run
 ```
 
 ### Ручное обновление
@@ -152,24 +159,21 @@ docker exec postcard-nginx nginx -s reload
 # Проверка срока действия
 certbot certificates
 
-# Принудительное обновление
+# Принудительное обновление (Nginx остановится автоматически)
 certbot renew --force-renewal
-
-# Перезагрузка Nginx
-docker exec postcard-nginx nginx -s reload
 ```
 
 ### Получение нового сертификата
 
 ```bash
 # Остановить Nginx (освободить порт 80)
-docker compose stop nginx
+docker stop postcard-nginx
 
 # Получить сертификат
 certbot certonly --standalone -d your-domain.com
 
 # Запустить Nginx
-docker compose start nginx
+docker start postcard-nginx
 ```
 
 ## База данных
