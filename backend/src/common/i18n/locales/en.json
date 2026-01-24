@@ -1,4 +1,11 @@
 {
+  "commands": {
+    "start": "Start the bot",
+    "balance": "Check balance",
+    "app": "Open editor",
+    "language": "Change language",
+    "help": "Help"
+  },
   "bot": {
     "welcome": "Hello, {{name}}! Welcome to Postcard Bot - an AI-powered image generation bot.",
     "welcome_registered": "Welcome back, {{name}}!",

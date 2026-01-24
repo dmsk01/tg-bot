@@ -7,6 +7,8 @@ import { balanceHandler } from './handlers/balance.handler.js';
 import { languageHandler, languageCallbackHandler } from './handlers/language.handler.js';
 import { helpHandler } from './handlers/help.handler.js';
 import { appHandler } from './handlers/app.handler.js';
+import en from '../common/i18n/locales/en.json' with { type: 'json' };
+import ru from '../common/i18n/locales/ru.json' with { type: 'json' };
 
 class BotService {
   private bot: Bot<BotContext>;
@@ -47,6 +49,34 @@ class BotService {
     logger.info('Bot handlers registered');
   }
 
+  private async setupCommands(): Promise<void> {
+    const commands = [
+      { command: 'start', description: en.commands.start },
+      { command: 'balance', description: en.commands.balance },
+      { command: 'app', description: en.commands.app },
+      { command: 'language', description: en.commands.language },
+      { command: 'help', description: en.commands.help },
+    ];
+
+    const commandsRu = [
+      { command: 'start', description: ru.commands.start },
+      { command: 'balance', description: ru.commands.balance },
+      { command: 'app', description: ru.commands.app },
+      { command: 'language', description: ru.commands.language },
+      { command: 'help', description: ru.commands.help },
+    ];
+
+    // Set default commands (English)
+    await this.bot.api.setMyCommands(commands);
+
+    // Set Russian commands for Russian-speaking users
+    await this.bot.api.setMyCommands(commandsRu, {
+      language_code: 'ru',
+    });
+
+    logger.info('Bot commands menu configured');
+  }
+
   getBot(): Bot<BotContext> {
     return this.bot;
   }
@@ -76,11 +106,14 @@ class BotService {
     if (webhookUrl) {
       // Webhook mode - need to init bot first for handleUpdate to work
       await this.bot.init();
+      await this.setupCommands();
       await this.setWebhook(`${webhookUrl}`);
       logger.info('Bot running in webhook mode');
     } else {
       // Polling mode (development)
       await this.deleteWebhook();
+      await this.bot.init();
+      await this.setupCommands();
 
       // Launch with timeout
       const launchWithTimeout = async (timeoutMs: number = 15000) => {
