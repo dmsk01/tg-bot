@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -76,8 +76,7 @@ if (configService.isDevelopment) {
           !pathname.startsWith('/api') &&
           !pathname.startsWith('/webhook') &&
           !pathname.startsWith('/uploads') &&
-          !pathname.startsWith('/generated') &&
-          !pathname.startsWith('/health')
+          !pathname.startsWith('/generated')
         );
       },
     })

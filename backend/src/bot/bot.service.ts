@@ -150,6 +150,21 @@ class BotService {
       // Bot might not be running, ignore
     }
   }
+
+  async setUserCommands(chatId: number, lang: string): Promise<void> {
+    const locale = lang === 'ru' ? ru : en;
+    const commands = [
+      { command: 'start', description: locale.commands.start },
+      { command: 'balance', description: locale.commands.balance },
+      { command: 'app', description: locale.commands.app },
+      { command: 'language', description: locale.commands.language },
+      { command: 'help', description: locale.commands.help },
+    ];
+
+    await this.bot.api.setMyCommands(commands, {
+      scope: { type: 'chat', chat_id: chatId },
+    });
+  }
 }
 
 export const botService = new BotService();

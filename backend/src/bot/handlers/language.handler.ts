@@ -2,6 +2,7 @@ import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { userService } from '../../services/user.service.js';
+import { botService } from '../bot.service.js';
 
 export async function languageHandler(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser;
@@ -29,6 +30,7 @@ export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
   const newLang = data === 'lang_ru' ? 'ru' : 'en';
 
   await userService.updateLanguage(user.id, newLang);
+  await botService.setUserCommands(ctx.chat!.id, newLang);
   await ctx.answerCallbackQuery();
   await ctx.reply(t('bot.language_changed', {}, newLang));
 }
