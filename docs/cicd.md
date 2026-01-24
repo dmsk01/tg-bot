@@ -227,11 +227,11 @@ Certbot использует standalone режим. Конфиг `/etc/letsencry
 ```ini
 [renewalparams]
 authenticator = standalone
-pre_hook = docker stop postcard-nginx
-post_hook = docker start postcard-nginx
+pre_hook = cd /var/www/postcard-bot/deploy && docker compose stop nginx
+post_hook = cd /var/www/postcard-bot/deploy && docker compose start nginx
 ```
 
-При обновлении Certbot автоматически останавливает Nginx, получает сертификат и запускает Nginx обратно.
+> **Важно:** Используйте `docker compose`, а не `docker stop/start` — иначе volumes могут не примонтироваться корректно.
 
 ### Ручное обновление
 

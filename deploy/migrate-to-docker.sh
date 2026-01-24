@@ -312,12 +312,12 @@ if [ -n "$RENEWAL_CONF" ]; then
     sed -i 's/authenticator = nginx/authenticator = standalone/' "$RENEWAL_CONF"
     sed -i '/^installer/d' "$RENEWAL_CONF"
 
-    # Добавляем pre/post hooks если их нет
+    # Добавляем pre/post hooks если их нет (используем docker compose для корректной работы volumes)
     if ! grep -q "pre_hook" "$RENEWAL_CONF"; then
-        echo "pre_hook = docker stop postcard-nginx" >> "$RENEWAL_CONF"
+        echo "pre_hook = cd /var/www/postcard-bot/deploy && docker compose stop nginx" >> "$RENEWAL_CONF"
     fi
     if ! grep -q "post_hook" "$RENEWAL_CONF"; then
-        echo "post_hook = docker start postcard-nginx" >> "$RENEWAL_CONF"
+        echo "post_hook = cd /var/www/postcard-bot/deploy && docker compose start nginx" >> "$RENEWAL_CONF"
     fi
 
     log_info "Certbot настроен для Docker"

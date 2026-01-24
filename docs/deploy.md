@@ -144,9 +144,11 @@ Certbot использует standalone режим с автоматическо
 ```ini
 [renewalparams]
 authenticator = standalone
-pre_hook = docker stop postcard-nginx
-post_hook = docker start postcard-nginx
+pre_hook = cd /var/www/postcard-bot/deploy && docker compose stop nginx
+post_hook = cd /var/www/postcard-bot/deploy && docker compose start nginx
 ```
+
+> **Важно:** Используйте `docker compose stop/start`, а не `docker stop/start`. После `docker stop/start` volumes могут не примонтироваться корректно.
 
 Проверка:
 ```bash
@@ -166,14 +168,16 @@ certbot renew --force-renewal
 ### Получение нового сертификата
 
 ```bash
+cd /var/www/postcard-bot/deploy
+
 # Остановить Nginx (освободить порт 80)
-docker stop postcard-nginx
+docker compose stop nginx
 
 # Получить сертификат
 certbot certonly --standalone -d your-domain.com
 
 # Запустить Nginx
-docker start postcard-nginx
+docker compose start nginx
 ```
 
 ## База данных
