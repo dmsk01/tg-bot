@@ -1,174 +1,289 @@
-# Деплой
+# Деплой (Docker)
 
 [← Назад к оглавлению](./README.md) | [← ngrok](./ngrok.md)
 
+## Архитектура
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        VPS Ubuntu 24                             │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                      Docker                              │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │    │
+│  │  │  PostgreSQL │  │    Redis    │  │     Backend     │  │    │
+│  │  │     :5432   │  │    :6379    │  │      :3000      │  │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────────┘  │    │
+│  │                                            ▲             │    │
+│  │  ┌─────────────────────────────────────────┴──────────┐ │    │
+│  │  │                     Nginx                           │ │    │
+│  │  │                   :80, :443                         │ │    │
+│  │  │        (SSL из /etc/letsencrypt хоста)             │ │    │
+│  │  └─────────────────────────────────────────────────────┘ │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                              │                                   │
+│                    Certbot (нативный)                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Требования к VPS
 
-- **CPU**: 2 cores
-- **RAM**: 4 GB
-- **Storage**: 50 GB SSD
-- **OS**: Ubuntu 22.04 LTS
-- **Bandwidth**: 100 Mbps
+- **CPU**: 1+ core
+- **RAM**: 1+ GB (2 GB рекомендуется)
+- **Storage**: 15+ GB SSD
+- **OS**: Ubuntu 24.04 LTS
+- **Домен**: Направлен на IP сервера
 
-## Подготовка VPS
+## Быстрый старт (новый сервер)
 
-```bash
-# Обновление системы
-sudo apt update && sudo apt upgrade -y
-
-# Установка пакетов
-sudo apt install -y nginx postgresql postgresql-contrib redis-server git curl
-
-# Node.js 20.x
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# PM2
-sudo npm install -g pm2
-
-# Certbot для SSL
-sudo apt install -y certbot python3-certbot-nginx
-```
-
-## Настройка PostgreSQL
+### 1. Подключение и настройка
 
 ```bash
-sudo -u postgres psql
-CREATE DATABASE postcard_bot;
-CREATE USER postcard_user WITH ENCRYPTED PASSWORD 'strong_password';
-GRANT ALL PRIVILEGES ON DATABASE postcard_bot TO postcard_user;
-\q
+ssh root@your-server-ip
+
+# Скачать и запустить скрипт настройки
+curl -O https://raw.githubusercontent.com/dmsk01/tg-bot/main/deploy/setup-server.sh
+chmod +x setup-server.sh
+./setup-server.sh
 ```
 
-## Деплой Backend
+Скрипт установит:
+- Docker и Docker Compose
+- Certbot для SSL
+- Создаст директории и пользователя deploy
+
+### 2. Получение SSL сертификата
 
 ```bash
-cd /var/www
-sudo git clone <repository-url> postcard_bot
-sudo chown -R $USER:$USER postcard_bot
-cd postcard_bot/backend
-
-npm install
-cp .env.example .env
-nano .env  # Настроить production переменные
-
-npm run build
-npm run prisma:migrate:deploy
-npm run prisma:seed
-
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
+# Certbot в standalone режиме (порт 80 должен быть свободен)
+certbot certonly --standalone -d your-domain.com -d www.your-domain.com
 ```
 
-## Деплой Frontend
+### 3. Создание конфигурации
 
 ```bash
-cd /var/www/postcard_bot/frontend
+cd /var/www/postcard-bot/deploy
 
-npm install
-cp .env.example .env
-nano .env  # Настроить production переменные
+# .env для docker-compose
+cat > .env << 'EOF'
+POSTGRES_USER=postcard_bot
+POSTGRES_PASSWORD=YOUR_STRONG_PASSWORD
+POSTGRES_DB=postcard_bot
+EOF
 
-npm run build
-# Файлы в dist/
+# backend.env для приложения
+cat > backend.env << 'EOF'
+NODE_ENV=production
+PORT=3000
+
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_WEBHOOK_URL=https://your-domain.com/webhook/telegram
+MINI_APP_URL=https://your-domain.com
+
+KANDINSKY_API_KEY=
+KANDINSKY_SECRET_KEY=
+
+YOOKASSA_SHOP_ID=
+YOOKASSA_SECRET_KEY=
+
+UPLOAD_DIR=/app/uploads
+GENERATED_DIR=/app/generated
+MAX_FILE_SIZE=10485760
+
+GENERATION_COST=10.00
+JWT_SECRET=your_random_jwt_secret
+
+LOG_LEVEL=info
+EOF
 ```
 
-## Настройка Nginx
+### 4. Обновление nginx.conf
+
+Отредактируйте `/var/www/postcard-bot/deploy/nginx.conf` — замените `poct-card.ru` на ваш домен.
+
+### 5. Запуск через CI/CD
+
+Настройте GitHub Secrets (см. [CI/CD](./cicd.md)) и сделайте push в main.
+
+Или запустите вручную:
 
 ```bash
-sudo nano /etc/nginx/sites-available/postcard-bot
+cd /var/www/postcard-bot/deploy
+docker compose build backend
+docker compose up -d
 ```
 
-```nginx
-# Backend API
-server {
-    listen 80;
-    server_name api.yourdomain.com;
+## Управление контейнерами
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /uploads {
-        alias /var/www/postcard_bot/backend/uploads;
-        expires 30d;
-    }
-
-    location /generated {
-        alias /var/www/postcard_bot/backend/generated;
-        expires 30d;
-    }
-}
-
-# Frontend Mini App
-server {
-    listen 80;
-    server_name app.yourdomain.com;
-
-    root /var/www/postcard_bot/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
-
-Активация:
 ```bash
-sudo ln -s /etc/nginx/sites-available/postcard-bot /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+cd /var/www/postcard-bot/deploy
+
+# Статус
+docker compose ps
+
+# Логи
+docker compose logs -f backend
+docker compose logs -f nginx
+
+# Перезапуск
+docker compose restart backend
+
+# Полная пересборка
+docker compose down
+docker compose build --no-cache backend
+docker compose up -d
 ```
 
 ## SSL сертификаты
 
+### Автоматическое обновление
+
+Certbot автоматически обновляет сертификаты. После обновления нужно перезагрузить Nginx в контейнере.
+
+Hook уже настроен в `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`:
+
 ```bash
-sudo certbot --nginx -d api.yourdomain.com -d app.yourdomain.com
+#!/bin/bash
+docker exec postcard-nginx nginx -s reload
 ```
 
-## Настройка Telegram Webhook
+### Ручное обновление
 
 ```bash
-curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://api.yourdomain.com/webhook/telegram"
+# Проверка срока действия
+certbot certificates
+
+# Принудительное обновление
+certbot renew --force-renewal
+
+# Перезагрузка Nginx
+docker exec postcard-nginx nginx -s reload
+```
+
+### Получение нового сертификата
+
+```bash
+# Остановить Nginx (освободить порт 80)
+docker compose stop nginx
+
+# Получить сертификат
+certbot certonly --standalone -d your-domain.com
+
+# Запустить Nginx
+docker compose start nginx
+```
+
+## База данных
+
+### Подключение к PostgreSQL
+
+```bash
+docker exec -it postcard-postgres psql -U postcard_bot -d postcard_bot
+```
+
+### Backup
+
+```bash
+docker exec postcard-postgres pg_dump -U postcard_bot postcard_bot > backup.sql
+```
+
+### Restore
+
+```bash
+cat backup.sql | docker exec -i postcard-postgres psql -U postcard_bot -d postcard_bot
+```
+
+### Миграции Prisma
+
+```bash
+docker exec postcard-backend npx prisma migrate deploy
+docker exec postcard-backend npx prisma migrate status
 ```
 
 ## Мониторинг
 
 ```bash
-# PM2
-pm2 monit
-pm2 logs postcard-bot
+# Ресурсы Docker
+docker stats
 
-# Nginx
-sudo tail -f /var/log/nginx/error.log
-sudo tail -f /var/log/nginx/access.log
+# Место на диске
+docker system df
+
+# Логи всех сервисов
+docker compose logs --tail 100
+
+# Health check
+curl https://your-domain.com/api/health
 ```
 
-## Команды PM2
+## Очистка
 
 ```bash
-pm2 start ecosystem.config.js  # Запуск
-pm2 stop postcard-bot          # Остановка
-pm2 restart postcard-bot       # Перезапуск
-pm2 logs postcard-bot          # Логи
-pm2 monit                      # Мониторинг
-pm2 save                       # Сохранить состояние
+# Удалить build cache
+docker builder prune -f
+
+# Удалить неиспользуемые образы
+docker image prune -f
+
+# Полная очистка (осторожно!)
+docker system prune -a
+```
+
+## Rollback
+
+```bash
+cd /var/www/postcard-bot/deploy
+
+# Откат к предыдущей версии (если есть backup)
+tar -xzvf /var/www/backups/backup_TIMESTAMP.tar.gz -C /var/www/postcard-bot/
+
+# Пересборка и перезапуск
+docker compose build backend
+docker compose up -d
+```
+
+## Troubleshooting
+
+### Контейнер не запускается
+
+```bash
+# Проверить логи
+docker compose logs backend
+
+# Проверить конфигурацию
+docker compose config
+```
+
+### Nginx не отвечает
+
+```bash
+# Проверить конфиг Nginx
+docker exec postcard-nginx nginx -t
+
+# Проверить SSL сертификаты
+ls -la /etc/letsencrypt/live/your-domain.com/
+```
+
+### База данных недоступна
+
+```bash
+# Проверить статус PostgreSQL
+docker exec postcard-postgres pg_isready -U postcard_bot
+
+# Проверить логи
+docker compose logs postgres
+```
+
+### Docker Hub rate limit
+
+```bash
+# Залогиниться (увеличивает лимит)
+docker login -u your_username
+
+# Потом пересобрать
+docker compose build backend
+docker compose up -d
 ```
 
 ---
 
-[Этапы реализации →](./roadmap.md)
+[CI/CD →](./cicd.md)
