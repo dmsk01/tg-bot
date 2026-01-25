@@ -2,6 +2,7 @@ import { Response } from 'express';
 import type { AuthenticatedRequest } from '../middlewares/validate-telegram.middleware.js';
 import { userService } from '../../services/user.service.js';
 import { botService } from '../../bot/bot.service.js';
+import { sseService } from '../../services/sse.service.js';
 
 export class UserController {
   async getMe(req: AuthenticatedRequest, res: Response): Promise<void> {
@@ -84,6 +85,23 @@ export class UserController {
     res.json({
       success: true,
       data: { isAgeConfirmed: user.isAgeConfirmed },
+    });
+  }
+
+  subscribeToLanguageEvents(req: AuthenticatedRequest, res: Response): void {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    sseService.addConnection(req.user!.id, res);
+
+    const heartbeat = setInterval(() => {
+      res.write(':heartbeat\n\n');
+    }, 30000);
+
+    res.on('close', () => {
+      clearInterval(heartbeat);
     });
   }
 }

@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 
 import { usePathname } from 'src/routes/hooks';
 
+import { useLanguageSync } from 'src/hooks/use-language-sync';
+
 import { useStore } from 'src/store/store';
 import { apiService } from 'src/services/api.service';
 import { themeConfig, ThemeProvider } from 'src/theme';
@@ -51,6 +53,7 @@ export default function App({ children }: AppProps) {
   const { user, isLoading, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
 
   useScrollToTop();
+  useLanguageSync();
 
   useEffect(() => {
     const initApp = async () => {
