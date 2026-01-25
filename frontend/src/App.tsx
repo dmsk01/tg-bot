@@ -95,9 +95,6 @@ export default function App({ children }: AppProps) {
     }
 
     if (user?.languageCode) {
-      console.log('[App] Setting language from user:', user.languageCode, 'current i18n.language:', i18n.language);
-      // DEBUG: временно показываем данные
-      alert(`DEBUG: API languageCode=${user.languageCode}, i18n.language=${i18n.language}`);
       i18n.changeLanguage(user.languageCode);
     }
   }, [user, setShowAgeConfirmModal, i18n]);
@@ -143,6 +140,24 @@ export default function App({ children }: AppProps) {
             )}
 
             {showAgeConfirmModal && <AgeConfirmation />}
+
+            {/* DEBUG: визуальная отладка языка */}
+            <Box
+              sx={{
+                position: 'fixed',
+                bottom: 70,
+                left: 8,
+                right: 8,
+                bgcolor: 'error.main',
+                color: 'white',
+                p: 1,
+                borderRadius: 1,
+                fontSize: 12,
+                zIndex: 9999,
+              }}
+            >
+              DEBUG: API lang={user?.languageCode || 'null'} | i18n={i18n.language} | user={user ? 'loaded' : 'null'}
+            </Box>
           </MotionLazy>
         </SnackbarProvider>
       </ThemeProvider>
