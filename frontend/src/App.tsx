@@ -1,9 +1,9 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
+import { Suspense, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import { useTranslation } from 'react-i18next';
-import { Suspense, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 
@@ -55,16 +55,10 @@ export default function App({ children }: AppProps) {
   useScrollToTop();
   useLanguageSync();
 
-  // DEBUG
-  const [debugInitData, setDebugInitData] = useState('...');
-  const [debugError, setDebugError] = useState('');
-
   useEffect(() => {
     const initApp = async () => {
       // Initialize Telegram WebApp
       const tg = window.Telegram?.WebApp;
-      setDebugInitData(tg?.initData ? `${tg.initData.length} chars` : 'MISSING!');
-
       if (tg) {
         tg.ready();
         tg.expand();
@@ -76,11 +70,7 @@ export default function App({ children }: AppProps) {
         }
       }
 
-      try {
-        await fetchUser();
-      } catch (err) {
-        setDebugError(String(err));
-      }
+      await fetchUser();
     };
 
     initApp();
@@ -150,25 +140,6 @@ export default function App({ children }: AppProps) {
             )}
 
             {showAgeConfirmModal && <AgeConfirmation />}
-
-            {/* DEBUG: визуальная отладка языка */}
-            <Box
-              sx={{
-                position: 'fixed',
-                bottom: 70,
-                left: 8,
-                right: 8,
-                bgcolor: 'error.main',
-                color: 'white',
-                p: 1,
-                borderRadius: 1,
-                fontSize: 11,
-                zIndex: 9999,
-              }}
-            >
-              initData: {debugInitData} | lang: {user?.languageCode || 'null'} | i18n: {i18n.language}
-              {debugError && <Box sx={{ color: 'yellow', mt: 0.5 }}>ERR: {debugError}</Box>}
-            </Box>
           </MotionLazy>
         </SnackbarProvider>
       </ThemeProvider>
