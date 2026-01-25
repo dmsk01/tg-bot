@@ -1,7 +1,7 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { SnackbarProvider } from 'notistack';
 import { useTranslation } from 'react-i18next';
 
@@ -55,10 +55,16 @@ export default function App({ children }: AppProps) {
   useScrollToTop();
   useLanguageSync();
 
+  // DEBUG
+  const [debugInitData, setDebugInitData] = useState('...');
+  const [debugError, setDebugError] = useState('');
+
   useEffect(() => {
     const initApp = async () => {
       // Initialize Telegram WebApp
       const tg = window.Telegram?.WebApp;
+      setDebugInitData(tg?.initData ? `${tg.initData.length} chars` : 'MISSING!');
+
       if (tg) {
         tg.ready();
         tg.expand();
@@ -70,7 +76,11 @@ export default function App({ children }: AppProps) {
         }
       }
 
-      await fetchUser();
+      try {
+        await fetchUser();
+      } catch (err) {
+        setDebugError(String(err));
+      }
     };
 
     initApp();
@@ -152,11 +162,12 @@ export default function App({ children }: AppProps) {
                 color: 'white',
                 p: 1,
                 borderRadius: 1,
-                fontSize: 12,
+                fontSize: 11,
                 zIndex: 9999,
               }}
             >
-              DEBUG: API lang={user?.languageCode || 'null'} | i18n={i18n.language} | user={user ? 'loaded' : 'null'}
+              initData: {debugInitData} | lang: {user?.languageCode || 'null'} | i18n: {i18n.language}
+              {debugError && <Box sx={{ color: 'yellow', mt: 0.5 }}>ERR: {debugError}</Box>}
             </Box>
           </MotionLazy>
         </SnackbarProvider>
