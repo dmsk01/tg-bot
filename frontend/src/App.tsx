@@ -1,9 +1,9 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
-import { Suspense, useEffect, useState } from 'react';
 import { SnackbarProvider } from 'notistack';
 import { useTranslation } from 'react-i18next';
+import { Suspense, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 
