@@ -25,6 +25,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const user = await apiService.getMe();
+      console.log('[Store] fetchUser result:', { id: user.id, languageCode: user.languageCode });
       set({ user, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
