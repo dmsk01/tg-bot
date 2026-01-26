@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@grammyjs/hydrate": "^1.6.0",
     "@prisma/client": "^6.9.0",
     "axios": "^1.7.9",
     "bullmq": "^5.66.4",

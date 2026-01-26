@@ -1,7 +1,6 @@
-import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
-import { configService } from '../../common/config/config.service.js';
+import { showMenu } from '../menu/menu.js';
 
 export async function startHandler(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser;
@@ -14,25 +13,11 @@ export async function startHandler(ctx: BotContext): Promise<void> {
   const name = user.firstName || user.username || 'User';
   const isNewUser = Date.now() - user.createdAt.getTime() < 60000;
 
-  const welcomeKey = isNewUser ? 'bot.welcome' : 'bot.welcome_registered';
-  const message = t(welcomeKey, { name }, lang);
-
-  // Build keyboard buttons
-  const keyboard = new InlineKeyboard();
-
-  // Mini App button only works with HTTPS URLs (Telegram requirement)
-  const miniAppUrl = configService.telegram.miniAppUrl;
-  if (miniAppUrl && miniAppUrl.startsWith('https://')) {
-    keyboard.webApp(t('bot.open_app', {}, lang), miniAppUrl).row();
-  }
-
-  keyboard.text(t('buttons.top_up', {}, lang), 'top_up');
-
-  await ctx.reply(message, { reply_markup: keyboard });
-
-  // If new user, show balance
+  // Show welcome message for new users
   if (isNewUser) {
-    const balance = user.balance.toNumber();
-    await ctx.reply(t('bot.balance', { balance: balance.toFixed(2) }, lang));
+    await ctx.reply(t('bot.welcome', { name }, lang));
   }
+
+  // Show main menu
+  await showMenu(ctx, 'main');
 }

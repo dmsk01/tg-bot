@@ -6,6 +6,15 @@
     "language": "Change language",
     "help": "Help"
   },
+  "menu": {
+    "main": "Hello, {{name}}! Choose an action:",
+    "settings": "Settings",
+    "balance_btn": "Balance",
+    "settings_btn": "Settings",
+    "help_btn": "Help",
+    "language_btn": "Language",
+    "back": "« Back"
+  },
   "bot": {
     "welcome": "Hello, {{name}}! Welcome to Postcard Bot - an AI-powered image generation bot.",
     "welcome_registered": "Welcome back, {{name}}!",

@@ -1,9 +1,12 @@
 import type { BotContext } from '../middlewares/auth.middleware.js';
-import { t } from '../../common/i18n/i18n.service.js';
+import { showMenu } from '../menu/menu.js';
 
 export async function helpHandler(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser;
-  const lang = user?.languageCode || 'ru';
+  if (!user) {
+    await ctx.reply('Error: User not found');
+    return;
+  }
 
-  await ctx.reply(t('bot.help', {}, lang));
+  await showMenu(ctx, 'help');
 }

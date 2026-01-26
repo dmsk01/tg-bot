@@ -1,4 +1,5 @@
 import { Bot } from 'grammy';
+import { hydrate } from '@grammyjs/hydrate';
 import { configService } from '../common/config/config.service.js';
 import { logger } from '../common/utils/logger.util.js';
 import { authMiddleware, type BotContext } from './middlewares/auth.middleware.js';
@@ -7,6 +8,7 @@ import { balanceHandler } from './handlers/balance.handler.js';
 import { languageHandler, languageCallbackHandler } from './handlers/language.handler.js';
 import { helpHandler } from './handlers/help.handler.js';
 import { appHandler } from './handlers/app.handler.js';
+import { navigateToMenu, type MenuType } from './menu/menu.js';
 import en from '../common/i18n/locales/en.json' with { type: 'json' };
 import ru from '../common/i18n/locales/ru.json' with { type: 'json' };
 
@@ -20,6 +22,9 @@ class BotService {
   }
 
   private setupMiddlewares(): void {
+    // Hydrate plugin - enables ctx.editMessageText, ctx.editMessageReplyMarkup, etc.
+    this.bot.use(hydrate());
+
     // Auth middleware - создает/получает пользователя из БД
     this.bot.use(authMiddleware);
 
@@ -38,7 +43,13 @@ class BotService {
     this.bot.command('help', helpHandler);
     this.bot.command('app', appHandler);
 
-    // Callback queries
+    // Menu navigation callbacks
+    this.bot.callbackQuery(/^menu:(.+)$/, async (ctx) => {
+      const menu = ctx.match[1] as MenuType;
+      await navigateToMenu(ctx, menu);
+    });
+
+    // Language selection callbacks
     this.bot.callbackQuery(/^lang_(ru|en)$/, languageCallbackHandler);
 
     // Top up callback (placeholder for MVP)

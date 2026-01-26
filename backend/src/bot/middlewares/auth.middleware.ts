@@ -1,9 +1,10 @@
 import { Context, MiddlewareFn } from 'grammy';
+import type { HydrateFlavor } from '@grammyjs/hydrate';
 import { userService } from '../../services/user.service.js';
 import { logger } from '../../common/utils/logger.util.js';
 import type { User } from '@prisma/client';
 
-export interface BotContext extends Context {
+export interface BotContext extends HydrateFlavor<Context> {
   dbUser?: User;
 }
 

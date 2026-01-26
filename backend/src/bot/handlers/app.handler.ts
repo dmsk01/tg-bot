@@ -14,7 +14,9 @@ export async function appHandler(ctx: BotContext): Promise<void> {
   const miniAppUrl = configService.telegram.miniAppUrl || 'https://example.com';
 
   const keyboard = new InlineKeyboard()
-    .webApp(t('bot.open_app', {}, lang), miniAppUrl);
+    .webApp(t('bot.open_app', {}, lang), miniAppUrl)
+    .row()
+    .text(t('menu.back', {}, lang), 'menu:main');
 
   await ctx.reply(t('bot.open_app', {}, lang), { reply_markup: keyboard });
 }

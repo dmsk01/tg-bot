@@ -1,6 +1,5 @@
-import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
-import { t } from '../../common/i18n/i18n.service.js';
+import { showMenu } from '../menu/menu.js';
 
 export async function balanceHandler(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser;
@@ -9,15 +8,5 @@ export async function balanceHandler(ctx: BotContext): Promise<void> {
     return;
   }
 
-  const lang = user.languageCode;
-  const balance = user.balance.toNumber();
-
-  const message = balance > 0
-    ? t('bot.balance', { balance: balance.toFixed(2) }, lang)
-    : t('bot.balance_empty', {}, lang);
-
-  const keyboard = new InlineKeyboard()
-    .text(t('buttons.top_up', {}, lang), 'top_up');
-
-  await ctx.reply(message, { reply_markup: keyboard });
+  await showMenu(ctx, 'balance');
 }

@@ -1,9 +1,9 @@
-import { InlineKeyboard } from 'grammy';
 import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { userService } from '../../services/user.service.js';
 import { botService } from '../bot.service.js';
 import { sseService } from '../../services/sse.service.js';
+import { showMenu } from '../menu/menu.js';
 
 export async function languageHandler(ctx: BotContext): Promise<void> {
   const user = ctx.dbUser;
@@ -12,13 +12,7 @@ export async function languageHandler(ctx: BotContext): Promise<void> {
     return;
   }
 
-  const lang = user.languageCode;
-  const keyboard = new InlineKeyboard()
-    .text(t('buttons.russian', {}, lang), 'lang_ru')
-    .row()
-    .text(t('buttons.english', {}, lang), 'lang_en');
-
-  await ctx.reply(t('bot.choose_language', {}, lang), { reply_markup: keyboard });
+  await showMenu(ctx, 'language');
 }
 
 export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
@@ -31,11 +25,16 @@ export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
   const newLang = data === 'lang_ru' ? 'ru' : 'en';
 
   await userService.updateLanguage(user.id, newLang);
-  
+
+  // Update user in context with new language
+  ctx.dbUser = { ...user, languageCode: newLang };
+
   // Notify frontend about language change via SSE
   sseService.sendLanguageChanged(user.id, newLang);
-  
+
   await botService.setUserCommands(ctx.chat!.id, newLang);
-  await ctx.answerCallbackQuery();
-  await ctx.reply(t('bot.language_changed', {}, newLang));
+
+  // Navigate back to settings menu with updated language and show toast
+  await ctx.answerCallbackQuery(t('bot.language_changed', {}, newLang));
+  await showMenu(ctx, 'settings', true);
 }
