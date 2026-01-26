@@ -76,6 +76,53 @@ const keyboard = new InlineKeyboard()
 await ctx.reply('Выберите действие:', { reply_markup: keyboard });
 ```
 
+## Интерактивное меню
+
+Бот использует интерактивное меню с inline-кнопками. При навигации по меню сообщение **редактируется**, а не отправляется новое.
+
+### Плагин @grammyjs/hydrate
+
+Для редактирования сообщений используется плагин [@grammyjs/hydrate](https://grammy.dev/plugins/hydrate), который добавляет методы `ctx.editMessageText()` и `ctx.editMessageReplyMarkup()`.
+
+```typescript
+import { hydrate } from '@grammyjs/hydrate';
+import type { HydrateFlavor } from '@grammyjs/hydrate';
+
+// Типы контекста
+interface BotContext extends HydrateFlavor<Context> {
+  dbUser?: User;
+}
+
+// Регистрация плагина
+bot.use(hydrate());
+```
+
+### Структура меню
+
+| Меню | Описание | Кнопки |
+|------|----------|--------|
+| `main` | Главное меню | Открыть редактор, Баланс, Настройки, Помощь |
+| `balance` | Просмотр баланса | Пополнить, Назад |
+| `settings` | Настройки | Язык, Назад |
+| `language` | Выбор языка | Русский, English, Назад |
+| `help` | Справка | Назад |
+
+### Навигация
+
+Callback-кнопки используют формат `menu:<menu_type>`:
+
+```typescript
+// Обработчик навигации
+bot.callbackQuery(/^menu:(.+)$/, async (ctx) => {
+  const menu = ctx.match[1] as MenuType;
+  await navigateToMenu(ctx, menu);
+});
+```
+
+### Файлы меню
+
+- `backend/src/bot/menu/menu.ts` - система меню (тексты, клавиатуры, навигация)
+
 ## Структура кода
 
 ```
@@ -86,6 +133,8 @@ backend/src/bot/
 │   ├── language.handler.ts   # /language + callbacks
 │   ├── help.handler.ts       # /help
 │   └── app.handler.ts        # /app
+├── menu/
+│   └── menu.ts               # Интерактивное меню
 ├── middlewares/
 │   └── auth.middleware.ts    # Создание/получение пользователя
 └── bot.service.ts            # Основной сервис

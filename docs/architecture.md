@@ -10,6 +10,7 @@ postcard_bot/
 │   ├── src/
 │   │   ├── bot/                     # Telegram бот
 │   │   │   ├── handlers/           # Обработчики команд
+│   │   │   ├── menu/               # Интерактивное меню
 │   │   │   ├── middlewares/        # Middleware (auth)
 │   │   │   └── bot.service.ts      # Основной сервис бота
 │   │   │

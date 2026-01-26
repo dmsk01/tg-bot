@@ -100,6 +100,7 @@ npm run dev
 - [x] Инфраструктура (backend + frontend)
 - [x] База данных (Prisma, 7 таблиц)
 - [x] Telegram бот с webhook/polling
+- [x] Интерактивное меню бота (@grammyjs/hydrate)
 - [x] REST API для Mini App
 - [x] Mini App Frontend
 - [x] Dev режим для локальной разработки (без Telegram)
@@ -113,4 +114,4 @@ npm run dev
 
 ---
 
-**Дата обновления**: 2026-01-10
+**Дата обновления**: 2026-01-26
