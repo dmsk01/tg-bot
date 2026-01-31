@@ -7,14 +7,40 @@ async function main() {
 
   // AI Models
   const models = [
+    // Flux models (Replicate)
+    {
+      name: 'flux-1.1-pro',
+      displayNameRu: 'Flux 1.1 Pro',
+      displayNameEn: 'Flux 1.1 Pro',
+      descriptionRu: 'Продвинутая модель от Black Forest Labs для генерации высококачественных изображений',
+      descriptionEn: 'Advanced model from Black Forest Labs for high-quality image generation',
+      costPerGeneration: 0.04, // $0.04 per image
+      isActive: true,
+      maxWidth: 1440,
+      maxHeight: 1440,
+      supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4', '21:9', '9:21'],
+    },
+    {
+      name: 'flux-fill-pro',
+      displayNameRu: 'Flux Fill Pro',
+      displayNameEn: 'Flux Fill Pro',
+      descriptionRu: 'Модель для inpainting - редактирования выделенных областей изображения',
+      descriptionEn: 'Inpainting model for editing selected areas of an image',
+      costPerGeneration: 0.05, // $0.05 per image
+      isActive: true,
+      maxWidth: 1440,
+      maxHeight: 1440,
+      supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+    },
+    // Legacy Kandinsky models (disabled)
     {
       name: 'kandinsky-3.0',
       displayNameRu: 'Kandinsky 3.0',
       displayNameEn: 'Kandinsky 3.0',
       descriptionRu: 'Базовая модель генерации изображений',
       descriptionEn: 'Basic image generation model',
-      costPerGeneration: 10.0,
-      isActive: true,
+      costPerGeneration: 0.03,
+      isActive: false, // Disabled - using Flux now
       maxWidth: 1024,
       maxHeight: 1024,
       supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
@@ -25,8 +51,8 @@ async function main() {
       displayNameEn: 'Kandinsky 3.1',
       descriptionRu: 'Улучшенная модель с более детализированными изображениями',
       descriptionEn: 'Enhanced model with more detailed images',
-      costPerGeneration: 15.0,
-      isActive: true,
+      costPerGeneration: 0.04,
+      isActive: false, // Disabled - using Flux now
       maxWidth: 1024,
       maxHeight: 1024,
       supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
@@ -206,28 +232,43 @@ async function main() {
   const settings = [
     {
       key: 'min_balance_for_generation',
-      value: 10,
-      description: 'Minimum balance required to generate an image',
+      value: 0.04, // $0.04 - minimum cost of generation
+      description: 'Minimum balance required to generate an image (USD)',
     },
     {
       key: 'welcome_bonus',
-      value: 50,
-      description: 'Welcome bonus for new users',
+      value: 0.50, // $0.50 - ~12 free generations
+      description: 'Welcome bonus for new users (USD)',
     },
     {
       key: 'referral_bonus',
-      value: 25,
-      description: 'Bonus for referral',
+      value: 0.25, // $0.25
+      description: 'Bonus for referral (USD)',
     },
     {
       key: 'payment_amounts',
-      value: [100, 300, 500, 1000],
-      description: 'Available payment amounts',
+      value: [1, 3, 5, 10, 25], // USD amounts
+      description: 'Available payment amounts (USD)',
     },
     {
       key: 'max_generations_per_day',
-      value: 50,
+      value: 100,
       description: 'Maximum generations per day per user',
+    },
+    {
+      key: 'rate_limit_hourly',
+      value: 20,
+      description: 'Maximum generations per hour per user',
+    },
+    {
+      key: 'rate_limit_concurrent',
+      value: 2,
+      description: 'Maximum concurrent generations per user',
+    },
+    {
+      key: 'default_model',
+      value: 'flux-1.1-pro',
+      description: 'Default AI model for generation',
     },
   ];
 

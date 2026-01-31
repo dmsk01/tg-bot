@@ -20,7 +20,10 @@ postcard_bot/
 │   │   │   └── middlewares/        # Middleware
 │   │   │
 │   │   ├── services/                # Бизнес-логика
-│   │   │   ├── ai/                 # Kandinsky, очереди
+│   │   │   ├── ai/                 # Replicate/Flux, генерации
+│   │   │   │   ├── replicate.service.ts  # Клиент Replicate API
+│   │   │   │   ├── generation.service.ts # Управление генерациями
+│   │   │   │   └── model.service.ts      # AI модели
 │   │   │   ├── payment/            # ЮKassa
 │   │   │   └── user.service.ts
 │   │   │
@@ -98,11 +101,33 @@ postcard_bot/
 │    Bot      │<────│  (Express)  │<────│   (Prisma)  │
 └─────────────┘     └─────────────┘     └─────────────┘
                            │
-                           ▼
-                    ┌─────────────┐
-                    │   Mini App  │
-                    │   (React)   │
-                    └─────────────┘
+           ┌───────────────┼───────────────┐
+           ▼               ▼               ▼
+    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+    │   Mini App  │ │  Replicate  │ │    Redis    │
+    │   (React)   │ │  (Flux AI)  │ │  (Queues)   │
+    └─────────────┘ └─────────────┘ └─────────────┘
+```
+
+## AI Pipeline
+
+```
+User Request → Validation → Balance Check → Create Generation Record
+                                                    │
+                                                    ▼
+                                            Queue Processing
+                                                    │
+                                                    ▼
+                              ┌─────────────────────────────────────┐
+                              │          Replicate API              │
+                              │  ┌─────────────┐ ┌───────────────┐  │
+                              │  │ flux-1.1-pro│ │ flux-fill-pro │  │
+                              │  │ (text2img)  │ │  (inpainting) │  │
+                              │  └─────────────┘ └───────────────┘  │
+                              └─────────────────────────────────────┘
+                                                    │
+                                                    ▼
+                              Update Generation → Notify User (SSE/Bot)
 ```
 
 ---

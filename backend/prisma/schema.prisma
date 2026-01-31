@@ -27,6 +27,8 @@ model User {
   transactions    Transaction[]
   generations     Generation[]
   settings        UserSettings?
+  apiUsage        ApiUsage[]
+  moderationLogs  ModerationLog[]
 
   @@index([telegramId])
   @@index([referralCode])
@@ -36,7 +38,7 @@ model User {
 model UserSettings {
   id                    String   @id @default(uuid())
   userId                String   @unique
-  defaultModel          String   @default("kandinsky-3.1")
+  defaultModel          String   @default("flux-1.1-pro")
   defaultAspectRatio    String   @default("1:1")
   notificationsEnabled  Boolean  @default(true)
 
@@ -106,39 +108,82 @@ model Template {
 }
 
 enum GenerationStatus {
+  PENDING
   QUEUED
   PROCESSING
   COMPLETED
   FAILED
+  MODERATED
+}
+
+enum GenerationType {
+  TEXT_TO_IMAGE
+  IMAGE_TO_IMAGE
+  INPAINTING
 }
 
 model Generation {
-  id                  String            @id @default(uuid())
-  userId              String
-  model               String
-  prompt              String
-  negativePrompt      String?
-  templateId          String?
-  aspectRatio         String
-  width               Int
-  height              Int
-  sourceImageUrl      String?
-  generatedImageUrl   String?
-  status              GenerationStatus  @default(QUEUED)
-  cost                Decimal           @db.Decimal(10, 2)
-  errorMessage        String?
-  externalId          String?
-  metadata            Json?
-  processingStartedAt DateTime?
-  processingEndedAt   DateTime?
-  createdAt           DateTime          @default(now())
+  id                    String            @id @default(uuid())
+  userId                String
 
-  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template            Template?         @relation(fields: [templateId], references: [id])
+  // Replicate tracking
+  replicatePredictionId String?           @unique @map("replicate_prediction_id")
+
+  // Тип генерации
+  generationType        GenerationType    @default(TEXT_TO_IMAGE) @map("generation_type")
+
+  // Модель и промпт
+  model                 String
+  prompt                String
+  negativePrompt        String?           @map("negative_prompt")
+  templateId            String?           @map("template_id")
+
+  // Параметры генерации
+  aspectRatio           String            @map("aspect_ratio")
+  width                 Int?
+  height                Int?
+  guidance              Float?            @default(3.5)
+  steps                 Int?              @default(28)
+  seed                  Int?
+  strength              Float?            @default(0.75)
+
+  // Исходное изображение (для image-to-image и inpainting)
+  sourceImageUrl        String?           @map("source_image_url")
+  sourceTelegramFileId  String?           @map("source_telegram_file_id")
+
+  // Маска (для inpainting)
+  maskImageUrl          String?           @map("mask_image_url")
+  maskTelegramFileId    String?           @map("mask_telegram_file_id")
+
+  // Результат
+  resultUrl             String?           @map("result_url")
+  resultTelegramFileId  String?           @map("result_telegram_file_id")
+  generatedImageUrl     String?           @map("generated_image_url")
+
+  // Статус и стоимость
+  status                GenerationStatus  @default(PENDING)
+  cost                  Decimal           @db.Decimal(10, 4)
+  errorMessage          String?           @map("error_message")
+  moderationReason      String?           @map("moderation_reason")
+
+  // Legacy поля для совместимости
+  externalId            String?           @map("external_id")
+  metadata              Json?
+
+  // Timestamps
+  createdAt             DateTime          @default(now()) @map("created_at")
+  startedAt             DateTime?         @map("started_at")
+  completedAt           DateTime?         @map("completed_at")
+  processingStartedAt   DateTime?         @map("processing_started_at")
+  processingEndedAt     DateTime?         @map("processing_ended_at")
+
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template              Template?         @relation(fields: [templateId], references: [id])
 
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  @@index([replicatePredictionId])
   @@map("generations")
 }
 
@@ -168,4 +213,41 @@ model SystemSettings {
   updatedAt   DateTime  @updatedAt
 
   @@map("system_settings")
+}
+
+// Отслеживание использования API
+model ApiUsage {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  date          DateTime  @db.Date
+  model         String
+  requestCount  Int       @default(0) @map("request_count")
+  successCount  Int       @default(0) @map("success_count")
+  failedCount   Int       @default(0) @map("failed_count")
+  totalCost     Decimal   @default(0) @db.Decimal(10, 4) @map("total_cost")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, model])
+  @@index([date])
+  @@map("api_usage")
+}
+
+// Логирование модерации
+model ModerationLog {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  generationId  String?   @map("generation_id")
+  inputType     String    @map("input_type")
+  inputContent  String    @map("input_content")
+  blocked       Boolean   @default(false)
+  reason        String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([blocked])
+  @@index([createdAt])
+  @@map("moderation_logs")
 }

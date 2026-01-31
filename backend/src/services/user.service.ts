@@ -151,6 +151,41 @@ export class UserService {
     return true;
   }
 
+  async refundBalance(userId: string, amount: number, description?: string, generationId?: string): Promise<User> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const balanceBefore = user.balance.toNumber();
+    const balanceAfter = balanceBefore + amount;
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { balance: balanceAfter },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId,
+          type: 'REFUND',
+          amount,
+          balanceBefore,
+          balanceAfter,
+          status: 'COMPLETED',
+          description,
+          generationId,
+          completedAt: new Date(),
+        },
+      }),
+    ]);
+
+    return this.findById(userId) as Promise<User>;
+  }
+
   async updateSettings(
     userId: string,
     settings: { defaultModel?: string; defaultAspectRatio?: string; notificationsEnabled?: boolean }

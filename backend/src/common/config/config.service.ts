@@ -15,6 +15,10 @@ const envSchema = z.object({
 
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
+  // Replicate API (Flux models)
+  REPLICATE_API_TOKEN: z.string().optional(),
+
+  // Kandinsky API (FusionBrain) - legacy
   KANDINSKY_API_KEY: z.string().optional(),
   KANDINSKY_SECRET_KEY: z.string().optional(),
   KANDINSKY_API_URL: z.string().default('https://api-key.fusionbrain.ai/'),
@@ -27,7 +31,7 @@ const envSchema = z.object({
   GENERATED_DIR: z.string().default('./generated'),
   MAX_FILE_SIZE: z.string().default('10485760').transform(Number),
 
-  GENERATION_COST: z.string().default('10.00').transform(Number),
+  GENERATION_COST: z.string().default('0.04').transform(Number),
 
   JWT_SECRET: z.string(),
 
@@ -75,6 +79,12 @@ export const configService = {
   get redis() {
     return {
       url: parsed.data.REDIS_URL,
+    };
+  },
+
+  get replicate() {
+    return {
+      apiToken: parsed.data.REPLICATE_API_TOKEN,
     };
   },
 

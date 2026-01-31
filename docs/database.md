@@ -2,7 +2,7 @@
 
 [← Назад к оглавлению](./README.md) | [← Архитектура](./architecture.md)
 
-База данных PostgreSQL с использованием Prisma ORM. Схема содержит 7 таблиц.
+База данных PostgreSQL с использованием Prisma ORM. Схема содержит 10 таблиц.
 
 ## Схема таблиц
 
@@ -91,21 +91,35 @@
 |------|-----|----------|
 | id | UUID | Primary Key |
 | userId | String | FK → users.id |
-| model | String | kandinsky-3.0 / kandinsky-3.1 |
+| replicatePredictionId | String? | ID предсказания в Replicate (unique) |
+| generationType | Enum | TEXT_TO_IMAGE, IMAGE_TO_IMAGE, INPAINTING |
+| model | String | flux-1.1-pro, flux-fill-pro |
 | prompt | String | Промпт |
 | negativePrompt | String? | Негативный промпт |
 | templateId | String? | FK → templates.id |
-| aspectRatio | String | 1:1, 16:9, 9:16, 4:3, 3:4 |
-| width | Int | Ширина |
-| height | Int | Высота |
+| aspectRatio | String | 1:1, 16:9, 9:16, 4:3, 3:4, 21:9, 9:21 |
+| width | Int? | Ширина |
+| height | Int? | Высота |
+| guidance | Float? | Guidance scale (default: 3.5) |
+| steps | Int? | Количество шагов (default: 28) |
+| seed | Int? | Seed для воспроизводимости |
+| strength | Float? | Сила преобразования (default: 0.75) |
 | sourceImageUrl | String? | URL исходного изображения |
-| generatedImageUrl | String? | URL результата |
-| status | Enum | QUEUED, PROCESSING, COMPLETED, FAILED |
-| cost | Decimal(10,2) | Стоимость |
+| sourceTelegramFileId | String? | Telegram file_id исходника |
+| maskImageUrl | String? | URL маски (для inpainting) |
+| maskTelegramFileId | String? | Telegram file_id маски |
+| resultUrl | String? | URL результата |
+| resultTelegramFileId | String? | Telegram file_id результата |
+| generatedImageUrl | String? | URL результата (legacy) |
+| status | Enum | PENDING, QUEUED, PROCESSING, COMPLETED, FAILED, MODERATED |
+| cost | Decimal(10,4) | Стоимость (USD) |
 | errorMessage | String? | Ошибка |
-| externalId | String? | ID в Kandinsky API |
+| moderationReason | String? | Причина модерации |
+| createdAt | DateTime | Дата создания |
+| startedAt | DateTime? | Начало обработки |
+| completedAt | DateTime? | Завершение |
 
-**Индексы:** `userId`, `status`, `createdAt`
+**Индексы:** `userId`, `status`, `createdAt`, `replicatePredictionId`
 
 ---
 
@@ -135,11 +149,48 @@
 | description | String? | Описание |
 
 **Настройки:**
-- `min_balance_for_generation` - минимальный баланс
-- `welcome_bonus` - приветственный бонус (50 руб.)
-- `referral_bonus` - бонус за реферала
-- `payment_amounts` - суммы пополнения [100, 300, 500, 1000]
-- `max_generations_per_day` - лимит генераций
+- `min_balance_for_generation` - минимальный баланс ($0.04)
+- `welcome_bonus` - приветственный бонус ($0.50)
+- `referral_bonus` - бонус за реферала ($0.25)
+- `payment_amounts` - суммы пополнения [1, 3, 5, 10, 25] USD
+- `max_generations_per_day` - лимит генераций (100)
+- `rate_limit_hourly` - лимит в час (20)
+- `rate_limit_concurrent` - параллельные генерации (2)
+- `default_model` - модель по умолчанию (flux-1.1-pro)
+
+---
+
+### 8. api_usage - Статистика использования API
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Primary Key |
+| userId | String | FK → users.id |
+| date | Date | Дата |
+| model | String | Название модели |
+| requestCount | Int | Кол-во запросов |
+| successCount | Int | Успешных |
+| failedCount | Int | Неудачных |
+| totalCost | Decimal(10,4) | Общая стоимость |
+
+**Индексы:** `userId + date + model` (unique), `date`
+
+---
+
+### 9. moderation_logs - Логи модерации
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Primary Key |
+| userId | String | FK → users.id |
+| generationId | String? | FK → generations.id |
+| inputType | String | Тип контента (prompt, image) |
+| inputContent | String | Содержимое |
+| blocked | Boolean | Заблокировано |
+| reason | String? | Причина блокировки |
+| createdAt | DateTime | Дата |
+
+**Индексы:** `userId`, `blocked`, `createdAt`
 
 ---
 

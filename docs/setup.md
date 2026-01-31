@@ -86,7 +86,11 @@ MINI_APP_URL=http://localhost:5173  # Для Mini App нужен HTTPS! См. ng
 # Redis
 REDIS_URL=redis://localhost:6379
 
-# Kandinsky API (подключить позже)
+# Replicate API (Flux models)
+# Получить токен: https://replicate.com/account/api-tokens
+REPLICATE_API_TOKEN=r8_xxxxxxxxxx
+
+# Kandinsky API (legacy, отключено)
 KANDINSKY_API_KEY=
 KANDINSKY_SECRET_KEY=
 
@@ -99,8 +103,8 @@ UPLOAD_DIR=./uploads
 GENERATED_DIR=./generated
 MAX_FILE_SIZE=10485760
 
-# Costs
-GENERATION_COST=10.00
+# Costs (USD)
+GENERATION_COST=0.04
 
 # JWT
 JWT_SECRET=your_super_secret_jwt_key
@@ -128,10 +132,17 @@ VITE_TELEGRAM_BOT_USERNAME=@your_bot_username
 
 В режиме `NODE_ENV=development` backend автоматически:
 - Пропускает валидацию Telegram initData
-- Создаёт тестового пользователя (telegramId: 12345678) с балансом 1000 руб
+- Создаёт тестового пользователя (telegramId: 12345678) с балансом $10
 - Позволяет тестировать в браузере без Telegram
 
 Это удобно для разработки UI без настройки туннелей.
+
+### Режим симуляции генерации
+
+Если `REPLICATE_API_TOKEN` не задан, система работает в режиме симуляции:
+- Генерации выполняются без реального API
+- Возвращается placeholder-изображение
+- Удобно для тестирования логики без траты денег
 
 ## Шаг 6: Создание Telegram бота
 
@@ -206,14 +217,15 @@ npm run dev
 | `TELEGRAM_WEBHOOK_URL` | URL для webhook | Нет | - |
 | `MINI_APP_URL` | URL Mini App | Нет | - |
 | `REDIS_URL` | Redis connection string | Нет | redis://localhost:6379 |
-| `KANDINSKY_API_KEY` | API ключ Kandinsky | При генерации | - |
-| `KANDINSKY_SECRET_KEY` | Secret ключ Kandinsky | При генерации | - |
+| `REPLICATE_API_TOKEN` | Токен Replicate API | При генерации | - |
+| `KANDINSKY_API_KEY` | API ключ Kandinsky (legacy) | Нет | - |
+| `KANDINSKY_SECRET_KEY` | Secret ключ Kandinsky (legacy) | Нет | - |
 | `YOOKASSA_SHOP_ID` | ID магазина ЮKassa | При оплате | - |
 | `YOOKASSA_SECRET_KEY` | Secret ключ ЮKassa | При оплате | - |
 | `UPLOAD_DIR` | Директория загрузок | Нет | ./uploads |
 | `GENERATED_DIR` | Директория генераций | Нет | ./generated |
 | `MAX_FILE_SIZE` | Макс. размер файла | Нет | 10485760 (10MB) |
-| `GENERATION_COST` | Стоимость генерации | Нет | 10.00 |
+| `GENERATION_COST` | Стоимость генерации (USD) | Нет | 0.04 |
 | `JWT_SECRET` | Секрет для JWT | **Да** | - |
 | `LOG_LEVEL` | Уровень логирования | Нет | info |
 | `DISABLE_BOT` | Отключить Telegram бота | Нет | false |
