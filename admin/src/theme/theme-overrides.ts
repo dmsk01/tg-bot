@@ -1,7 +1,6 @@
 import type { ThemeOptions } from './types';
 
 import { createPaletteChannel } from 'minimal-shared/utils';
-
 import { cosmicBackgrounds } from './theme-config';
 
 // ----------------------------------------------------------------------
