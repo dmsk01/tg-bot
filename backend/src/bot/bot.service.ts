@@ -92,10 +92,12 @@ class BotService {
     return this.bot;
   }
 
-  async setWebhook(url: string): Promise<void> {
+  async setWebhook(url: string, secretToken?: string): Promise<void> {
     try {
-      await this.bot.api.setWebhook(url);
-      logger.info(`Webhook set to: ${url}`);
+      await this.bot.api.setWebhook(url, {
+        secret_token: secretToken,
+      });
+      logger.info(`Webhook set to: ${url}${secretToken ? ' (with secret token)' : ''}`);
     } catch (error) {
       logger.error('Failed to set webhook:', error);
       throw error;
@@ -118,7 +120,7 @@ class BotService {
       // Webhook mode - need to init bot first for handleUpdate to work
       await this.bot.init();
       await this.setupCommands();
-      await this.setWebhook(`${webhookUrl}`);
+      await this.setWebhook(webhookUrl, configService.telegram.webhookSecret);
       logger.info('Bot running in webhook mode');
     } else {
       // Polling mode (development)

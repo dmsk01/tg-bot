@@ -11,6 +11,7 @@ const envSchema = z.object({
 
   TELEGRAM_BOT_TOKEN: z.string(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
+  TELEGRAM_WEBHOOK_SECRET: z.string().min(32).optional(),
   MINI_APP_URL: z.string().optional(),
 
   REDIS_URL: z.string().default('redis://localhost:6379'),
@@ -78,6 +79,7 @@ export const configService = {
     return {
       botToken: parsed.data.TELEGRAM_BOT_TOKEN,
       webhookUrl: parsed.data.TELEGRAM_WEBHOOK_URL,
+      webhookSecret: parsed.data.TELEGRAM_WEBHOOK_SECRET,
       miniAppUrl: parsed.data.MINI_APP_URL,
     };
   },
