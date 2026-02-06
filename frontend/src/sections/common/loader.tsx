@@ -1,16 +1,10 @@
-import { useTranslation } from 'react-i18next';
-
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 
 interface LoaderProps {
   text?: string;
 }
 
-export function Loader({ text }: LoaderProps) {
-  const { t } = useTranslation();
-
+export function Loader({ text: _text }: LoaderProps) {
   return (
     <Box
       sx={{
@@ -19,13 +13,23 @@ export function Loader({ text }: LoaderProps) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        gap: 2,
+        bgcolor: 'background.default',
       }}
     >
-      <CircularProgress size={48} />
-      <Typography variant="body1" color="text.secondary">
-        {text || t('app.loading')}
-      </Typography>
+      <Box
+        component="video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        sx={{
+          width: 200,
+          height: 200,
+          objectFit: 'contain',
+        }}
+      >
+        <source src="/loader.mp4" type="video/mp4" />
+      </Box>
     </Box>
   );
 }
