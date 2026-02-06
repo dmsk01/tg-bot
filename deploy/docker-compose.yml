@@ -97,10 +97,14 @@ services:
     volumes:
       # Конфигурация Nginx
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Basic auth для админки
+      - ./.htpasswd:/etc/nginx/.htpasswd:ro
       # SSL сертификаты с хоста
       - /etc/letsencrypt:/etc/letsencrypt:ro
       # Frontend статика
       - ../frontend/dist:/var/www/frontend:ro
+      # Admin panel статика
+      - ../admin/dist:/var/www/admin:ro
       # Uploads и generated images
       - uploads_data:/var/www/uploads:ro
       - generated_data:/var/www/generated:ro

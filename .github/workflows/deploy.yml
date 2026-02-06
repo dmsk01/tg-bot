@@ -29,10 +29,10 @@ concurrency:
 
 jobs:
   # ===========================================================================
-  # JOB 1: Сборка Frontend
+  # JOB 1: Сборка Frontend + Admin
   # ===========================================================================
   build-frontend:
-    name: Build Frontend
+    name: Build Frontend & Admin
     runs-on: ubuntu-latest
 
     steps:
@@ -57,11 +57,28 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_TELEGRAM_BOT_USERNAME: ${{ secrets.VITE_TELEGRAM_BOT_USERNAME }}
 
+      - name: Install admin dependencies
+        run: npm ci
+        working-directory: ./admin
+
+      - name: Build admin
+        run: npm run build
+        working-directory: ./admin
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
       - name: Upload frontend build
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
+          retention-days: 1
+
+      - name: Upload admin build
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-dist
+          path: admin/dist
           retention-days: 1
 
   # ===========================================================================
@@ -89,6 +106,12 @@ jobs:
           name: frontend-dist
           path: frontend/dist
 
+      - name: Download admin build
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-dist
+          path: admin/dist
+
       # -----------------------------------------------------------------------
       # Создание env файлов из GitHub Secrets
       # -----------------------------------------------------------------------
@@ -100,6 +123,9 @@ jobs:
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           EOF
+
+          # .htpasswd для basic auth админки
+          echo "${{ secrets.ADMIN_BASIC_AUTH_USER }}:$(openssl passwd -apr1 ${{ secrets.ADMIN_BASIC_AUTH_PASS }})" > deploy/.htpasswd
 
           # backend.env для backend контейнера
           cat > deploy/backend.env << EOF
@@ -135,6 +161,10 @@ jobs:
           # Frontend (уже собранный)
           mkdir -p deploy-package/frontend
           cp -r frontend/dist deploy-package/frontend/
+
+          # Admin panel (уже собранный)
+          mkdir -p deploy-package/admin
+          cp -r admin/dist deploy-package/admin/
 
           # Deploy конфиги (включая сгенерированный backend.env)
           cp -r deploy deploy-package/
@@ -209,12 +239,19 @@ jobs:
           rm -rf $APP_DIR/frontend/dist
           cp -r deploy-package/frontend/dist $APP_DIR/frontend/
 
+          # Обновляем admin panel
+          echo "Updating admin panel..."
+          mkdir -p $APP_DIR/admin
+          rm -rf $APP_DIR/admin/dist
+          cp -r deploy-package/admin/dist $APP_DIR/admin/
+
           # Обновляем deploy конфиги
           echo "Updating deploy configs..."
           cp deploy-package/deploy/docker-compose.yml $APP_DIR/deploy/
           cp deploy-package/deploy/nginx.conf $APP_DIR/deploy/
           cp deploy-package/deploy/.env $APP_DIR/deploy/
           cp deploy-package/deploy/backend.env $APP_DIR/deploy/
+          cp deploy-package/deploy/.htpasswd $APP_DIR/deploy/
 
           # Переходим в директорию deploy
           cd $APP_DIR/deploy
