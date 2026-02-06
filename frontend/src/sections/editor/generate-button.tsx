@@ -66,7 +66,7 @@ export function GenerateButton() {
         }
         sx={{
           minWidth: 160,
-          color: 'white',
+          color: 'common.white',
           background: cosmicGradients.primary,
           '&:hover': {
             background: cosmicGradients.primaryHover,
