@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { adminAuthService } from '../../../services/admin/admin-auth.service.js';
 import { logger } from '../../../common/utils/logger.util.js';
-import type { AdminUser, AdminRole } from '@prisma/client';
+import type { AdminUser } from '@prisma/client';
 
 export interface AdminRequest extends Request {
   admin?: Omit<AdminUser, 'passwordHash'>;
@@ -9,9 +9,10 @@ export interface AdminRequest extends Request {
 }
 
 export function extractClientInfo(req: Request): { ipAddress: string; userAgent: string } {
-  const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
-    || req.socket.remoteAddress
-    || 'unknown';
+  const ipAddress =
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    'unknown';
   const userAgent = req.headers['user-agent'] || 'unknown';
 
   return { ipAddress, userAgent };

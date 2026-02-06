@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminUsersController } from '../controllers/admin-users.controller.js';
 import { authenticateAdmin } from '../middlewares/admin-auth.middleware.js';
-import { requirePermission, requireRole } from '../middlewares/rbac.middleware.js';
+import { requirePermission } from '../middlewares/rbac.middleware.js';
 
 const router = Router();
 
