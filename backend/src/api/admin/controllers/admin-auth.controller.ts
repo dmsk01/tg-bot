@@ -6,7 +6,7 @@ import type { AdminRequest } from '../middlewares/admin-auth.middleware.js';
 import { extractClientInfo } from '../middlewares/admin-auth.middleware.js';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -32,15 +32,15 @@ export class AdminAuthController {
       return;
     }
 
-    const { email, password } = validation.data;
+    const { username, password } = validation.data;
     const { ipAddress, userAgent } = extractClientInfo(req);
 
-    const result = await adminAuthService.login(email, password, ipAddress, userAgent);
+    const result = await adminAuthService.login(username, password, ipAddress, userAgent);
 
     if (!result) {
       res.status(401).json({
         success: false,
-        error: 'Invalid email or password',
+        error: 'Invalid username or password',
       });
       return;
     }

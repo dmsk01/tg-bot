@@ -22,10 +22,10 @@ class AdminApiService {
   }
 
   // Auth
-  async login(email: string, password: string): Promise<{ admin: AdminUser; tokens: AuthTokens }> {
+  async login(username: string, password: string): Promise<{ admin: AdminUser; tokens: AuthTokens }> {
     const response = await axiosInstance.post<ApiResponse<{ admin: AdminUser; accessToken: string; refreshToken: string }>>(
       '/admin/auth/login',
-      { email, password }
+      { username, password }
     );
 
     if (response.data.success && response.data.data) {

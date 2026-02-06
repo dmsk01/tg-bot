@@ -31,7 +31,7 @@ const changeBalanceSchema = z.object({
 });
 
 const createAdminSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT']),
   firstName: z.string().optional(),
@@ -257,12 +257,12 @@ export class AdminUsersController {
       return;
     }
 
-    const { email, password, role, firstName, lastName } = validation.data;
+    const { username, password, role, firstName, lastName } = validation.data;
     const { ipAddress, userAgent } = extractClientInfo(req);
 
     try {
       const admin = await adminAuthService.createAdmin(
-        email,
+        username,
         password,
         role,
         firstName,

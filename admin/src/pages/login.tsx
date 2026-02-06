@@ -18,7 +18,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../auth/context/auth-provider';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   });
@@ -48,7 +48,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(data.email, data.password);
+      await login(data.username, data.password);
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -85,14 +85,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
-              {...register('email')}
-              label="Email"
-              type="email"
+              {...register('username')}
+              label="Username"
+              type="text"
               fullWidth
-              error={!!errors.email}
-              helperText={errors.email?.message}
+              error={!!errors.username}
+              helperText={errors.username?.message}
               sx={{ mb: 3 }}
-              autoComplete="email"
+              autoComplete="username"
             />
 
             <TextField

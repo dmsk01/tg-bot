@@ -266,7 +266,7 @@ enum AdminRole {
 
 model AdminUser {
   id            String      @id @default(uuid())
-  email         String      @unique
+  username      String      @unique
   passwordHash  String      @map("password_hash")
   firstName     String?     @map("first_name")
   lastName      String?     @map("last_name")
@@ -279,7 +279,7 @@ model AdminUser {
   adminLogs     AdminLog[]
   createdPromocodes Promocode[] @relation("PromoCodeCreator")
 
-  @@index([email])
+  @@index([username])
   @@index([isActive])
   @@map("admin_users")
 }

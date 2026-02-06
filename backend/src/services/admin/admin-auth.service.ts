@@ -9,7 +9,7 @@ const BCRYPT_ROUNDS = 12;
 
 export interface TokenPayload {
   sub: string;
-  email: string;
+  username: string;
   role: AdminRole;
   type: 'access' | 'refresh';
 }
@@ -48,14 +48,14 @@ export class AdminAuthService {
 
     const accessPayload: TokenPayload = {
       sub: admin.id,
-      email: admin.email,
+      username: admin.username,
       role: admin.role,
       type: 'access',
     };
 
     const refreshPayload: TokenPayload = {
       sub: admin.id,
-      email: admin.email,
+      username: admin.username,
       role: admin.role,
       type: 'refresh',
     };
@@ -84,13 +84,13 @@ export class AdminAuthService {
   }
 
   async login(
-    email: string,
+    username: string,
     password: string,
     ipAddress?: string,
     userAgent?: string
   ): Promise<LoginResult | null> {
     const admin = await prisma.adminUser.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { username: username.toLowerCase() },
     });
 
     if (!admin || !admin.isActive) {
@@ -208,7 +208,7 @@ export class AdminAuthService {
   }
 
   async createAdmin(
-    email: string,
+    username: string,
     password: string,
     role: AdminRole,
     firstName?: string,
@@ -221,7 +221,7 @@ export class AdminAuthService {
 
     const admin = await prisma.adminUser.create({
       data: {
-        email: email.toLowerCase(),
+        username: username.toLowerCase(),
         passwordHash,
         role,
         firstName,
@@ -235,7 +235,7 @@ export class AdminAuthService {
         action: 'CREATE_ADMIN',
         entityType: 'AdminUser',
         entityId: admin.id,
-        details: { email: admin.email, role: admin.role },
+        details: { username: admin.username, role: admin.role },
         ipAddress,
         userAgent,
       });

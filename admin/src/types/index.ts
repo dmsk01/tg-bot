@@ -2,7 +2,7 @@ export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'SUPPORT';
 
 export interface AdminUser {
   id: string;
-  email: string;
+  username: string;
   firstName?: string;
   lastName?: string;
   role: AdminRole;
@@ -47,7 +47,7 @@ export interface Promocode {
   };
   createdBy?: {
     id: string;
-    email: string;
+    username: string;
     firstName?: string;
     lastName?: string;
   };
