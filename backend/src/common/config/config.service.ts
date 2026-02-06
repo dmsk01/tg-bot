@@ -35,6 +35,12 @@ const envSchema = z.object({
 
   JWT_SECRET: z.string(),
 
+  // Admin Panel
+  ADMIN_JWT_SECRET: z.string().optional(),
+  ADMIN_JWT_ACCESS_EXPIRES: z.string().default('15m'),
+  ADMIN_JWT_REFRESH_EXPIRES: z.string().default('7d'),
+  ADMIN_CORS_ORIGIN: z.string().optional(),
+
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
 
   DISABLE_BOT: z.string().optional().transform(val => val === 'true'),
@@ -126,5 +132,14 @@ export const configService = {
 
   get disableBot() {
     return parsed.data.DISABLE_BOT || false;
+  },
+
+  get admin() {
+    return {
+      jwtSecret: parsed.data.ADMIN_JWT_SECRET || parsed.data.JWT_SECRET,
+      jwtAccessExpires: parsed.data.ADMIN_JWT_ACCESS_EXPIRES,
+      jwtRefreshExpires: parsed.data.ADMIN_JWT_REFRESH_EXPIRES,
+      corsOrigin: parsed.data.ADMIN_CORS_ORIGIN,
+    };
   },
 };
