@@ -29,6 +29,7 @@ model User {
   settings        UserSettings?
   apiUsage        ApiUsage[]
   moderationLogs  ModerationLog[]
+  promocodeUsages PromocodeUsage[]
 
   @@index([telegramId])
   @@index([referralCode])
@@ -250,4 +251,110 @@ model ModerationLog {
   @@index([blocked])
   @@index([createdAt])
   @@map("moderation_logs")
+}
+
+// ============================================
+// ADMIN PANEL MODELS
+// ============================================
+
+enum AdminRole {
+  SUPER_ADMIN   // Полный доступ
+  ADMIN         // Управление пользователями, промокодами
+  MODERATOR     // Просмотр, модерация контента
+  SUPPORT       // Только просмотр, ответы
+}
+
+model AdminUser {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String      @map("password_hash")
+  firstName     String?     @map("first_name")
+  lastName      String?     @map("last_name")
+  role          AdminRole   @default(MODERATOR)
+  isActive      Boolean     @default(true) @map("is_active")
+  lastLoginAt   DateTime?   @map("last_login_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  adminLogs     AdminLog[]
+  createdPromocodes Promocode[] @relation("PromoCodeCreator")
+
+  @@index([email])
+  @@index([isActive])
+  @@map("admin_users")
+}
+
+enum PromocodeType {
+  FIXED_AMOUNT    // Фиксированная сумма ($5)
+  PERCENTAGE      // Процент от пополнения (10%)
+  BONUS_CREDITS   // Бонусные кредиты на генерации
+}
+
+model Promocode {
+  id               String          @id @default(uuid())
+  code             String          @unique
+  type             PromocodeType
+  value            Decimal         @db.Decimal(10, 4)
+
+  // Ограничения
+  maxUsages        Int?            @map("max_usages")
+  maxUsagesPerUser Int?            @map("max_usages_per_user") @default(1)
+  minBalance       Decimal?        @map("min_balance") @db.Decimal(10, 2)
+
+  // Период действия
+  startsAt         DateTime?       @map("starts_at")
+  expiresAt        DateTime?       @map("expires_at")
+
+  // Статус
+  isActive         Boolean         @default(true) @map("is_active")
+
+  // Метаданные
+  description      String?
+  createdById      String?         @map("created_by")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  createdBy        AdminUser?      @relation("PromoCodeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  usages           PromocodeUsage[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("promocodes")
+}
+
+model PromocodeUsage {
+  id            String    @id @default(uuid())
+  promocodeId   String    @map("promocode_id")
+  userId        String    @map("user_id")
+  appliedValue  Decimal   @map("applied_value") @db.Decimal(10, 4)
+  usedAt        DateTime  @default(now()) @map("used_at")
+  transactionId String?   @map("transaction_id")
+
+  promocode     Promocode @relation(fields: [promocodeId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([promocodeId])
+  @@index([userId])
+  @@index([usedAt])
+  @@map("promocode_usages")
+}
+
+model AdminLog {
+  id          String    @id @default(uuid())
+  adminId     String    @map("admin_id")
+  action      String
+  entityType  String?   @map("entity_type")
+  entityId    String?   @map("entity_id")
+  details     Json?
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_logs")
 }
