@@ -109,8 +109,8 @@ ALTER COLUMN "height" DROP NOT NULL;
 
 -- 9. Create api_usage table
 CREATE TABLE IF NOT EXISTS "api_usage" (
-    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    "user_id" UUID NOT NULL,
+    "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    "user_id" TEXT NOT NULL,
     "date" DATE NOT NULL,
     "model" VARCHAR(100) NOT NULL,
     "request_count" INTEGER DEFAULT 0,
@@ -125,9 +125,9 @@ CREATE INDEX IF NOT EXISTS "api_usage_date_idx" ON "api_usage"("date");
 
 -- 10. Create moderation_logs table
 CREATE TABLE IF NOT EXISTS "moderation_logs" (
-    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    "user_id" UUID NOT NULL,
-    "generation_id" UUID,
+    "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    "user_id" TEXT NOT NULL,
+    "generation_id" TEXT,
     "input_type" VARCHAR(50) NOT NULL,
     "input_content" TEXT NOT NULL,
     "blocked" BOOLEAN DEFAULT false,

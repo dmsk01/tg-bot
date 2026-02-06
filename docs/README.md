@@ -10,6 +10,7 @@
 - [REST API](./api.md)
 - [Telegram бот](./bot.md)
 - [Mini App Frontend](./frontend.md)
+- [Админ-панель](./admin-panel.md) ← **NEW**
 - [Установка и настройка](./setup.md)
 - [Локальная разработка (туннели)](./ngrok.md)
 - [Деплой](./deploy.md)
