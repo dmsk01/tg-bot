@@ -123,7 +123,8 @@ export class AdminAuthService {
 
     const tokens = this.generateTokens(admin);
 
-    const { passwordHash: _, ...adminWithoutPassword } = admin;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...adminWithoutPassword } = admin;
 
     return {
       admin: adminWithoutPassword,
@@ -157,7 +158,8 @@ export class AdminAuthService {
       return null;
     }
 
-    const { passwordHash: _, ...adminWithoutPassword } = admin;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...adminWithoutPassword } = admin;
     return adminWithoutPassword;
   }
 
@@ -239,7 +241,8 @@ export class AdminAuthService {
       });
     }
 
-    const { passwordHash: _, ...adminWithoutPassword } = admin;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...adminWithoutPassword } = admin;
     return adminWithoutPassword;
   }
 }
