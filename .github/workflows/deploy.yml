@@ -90,6 +90,39 @@ jobs:
           path: frontend/dist
 
       # -----------------------------------------------------------------------
+      # Создание env файлов из GitHub Secrets
+      # -----------------------------------------------------------------------
+      - name: Create env files from secrets
+        run: |
+          # .env для docker-compose (PostgreSQL)
+          cat > deploy/.env << EOF
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          EOF
+
+          # backend.env для backend контейнера
+          cat > deploy/backend.env << EOF
+          NODE_ENV=production
+          PORT=3000
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_URL=${{ secrets.TELEGRAM_WEBHOOK_URL }}
+          TELEGRAM_WEBHOOK_SECRET=${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          MINI_APP_URL=${{ secrets.MINI_APP_URL }}
+          REPLICATE_API_TOKEN=${{ secrets.REPLICATE_API_TOKEN }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }}
+          ADMIN_JWT_ACCESS_EXPIRES=15m
+          ADMIN_JWT_REFRESH_EXPIRES=7d
+          ADMIN_CORS_ORIGIN=${{ secrets.ADMIN_CORS_ORIGIN }}
+          UPLOAD_DIR=/app/uploads
+          GENERATED_DIR=/app/generated
+          MAX_FILE_SIZE=10485760
+          GENERATION_COST=0.04
+          LOG_LEVEL=info
+          EOF
+
+      # -----------------------------------------------------------------------
       # Подготовка deploy package
       # -----------------------------------------------------------------------
       - name: Create deployment package
@@ -103,7 +136,7 @@ jobs:
           mkdir -p deploy-package/frontend
           cp -r frontend/dist deploy-package/frontend/
 
-          # Deploy конфиги
+          # Deploy конфиги (включая сгенерированный backend.env)
           cp -r deploy deploy-package/
 
           # Создаем архив
@@ -180,19 +213,11 @@ jobs:
           echo "Updating deploy configs..."
           cp deploy-package/deploy/docker-compose.yml $APP_DIR/deploy/
           cp deploy-package/deploy/nginx.conf $APP_DIR/deploy/
+          cp deploy-package/deploy/.env $APP_DIR/deploy/
+          cp deploy-package/deploy/backend.env $APP_DIR/deploy/
 
           # Переходим в директорию deploy
           cd $APP_DIR/deploy
-
-          # Проверяем наличие .env файлов
-          if [ ! -f ".env" ]; then
-            echo "ERROR: .env file not found!"
-            exit 1
-          fi
-          if [ ! -f "backend.env" ]; then
-            echo "ERROR: backend.env file not found!"
-            exit 1
-          fi
 
           # Пересобираем backend образ
           echo "Building backend image..."
