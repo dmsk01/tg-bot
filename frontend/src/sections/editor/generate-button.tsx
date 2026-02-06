@@ -71,6 +71,9 @@ export function GenerateButton() {
           '&:hover': {
             background: cosmicGradients.primaryHover,
           },
+          '&.Mui-disabled': {
+            color: 'common.white',
+          },
         }}
       >
         {isGenerating ? t('editor.generating') : t('editor.generate')}
