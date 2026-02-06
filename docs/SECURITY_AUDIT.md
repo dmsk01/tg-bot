@@ -846,7 +846,7 @@ Fallback на `http://localhost:3000` - убедиться что в production 
 
 - [x] Отозвать Telegram Bot Token через @BotFather (2026-02-06)
 - [x] Отозвать Replicate API Token в dashboard (2026-02-06)
-- [ ] Удалить .env из git истории (`git filter-repo`)
+- [x] ~~Удалить .env из git истории~~ - не требуется, файл никогда не был закоммичен
 - [x] Сгенерировать новые токены и обновить в GitHub Secrets (2026-02-06)
 - [x] Убрать dev mode bypass из `validate-telegram.middleware.ts` (2026-02-06)
 - [x] Добавить валидацию webhook подписи (2026-02-06)
