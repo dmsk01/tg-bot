@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useStore } from 'src/store/store';
+import { cosmicGradients } from 'src/theme/theme-config';
 
 export function GenerateButton() {
   const { t } = useTranslation();
@@ -63,7 +64,13 @@ export function GenerateButton() {
             <CircularProgress size={20} color="inherit" />
           ) : null
         }
-        sx={{ minWidth: 160 }}
+        sx={{
+          minWidth: 160,
+          background: cosmicGradients.primary,
+          '&:hover': {
+            background: cosmicGradients.primaryHover,
+          },
+        }}
       >
         {isGenerating ? t('editor.generating') : t('editor.generate')}
       </Button>
