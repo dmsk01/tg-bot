@@ -72,6 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-frontend
 
+    environment:
+      name: production
+      url: https://poct-card.ru
+
     steps:
       # -----------------------------------------------------------------------
       # Скачивание артефактов
