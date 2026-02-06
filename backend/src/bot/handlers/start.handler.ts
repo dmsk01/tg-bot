@@ -19,14 +19,11 @@ export async function startHandler(ctx: BotContext): Promise<void> {
 
   const lang = user.languageCode;
   const name = user.firstName || user.username || 'User';
-  const isNewUser = Date.now() - user.createdAt.getTime() < 60000;
 
-  // Show welcome message with image for new users
-  if (isNewUser) {
-    await ctx.replyWithPhoto(new InputFile(WELCOME_IMAGE_PATH), {
-      caption: t('bot.welcome', { name }, lang),
-    });
-  }
+  // Show welcome message with image
+  await ctx.replyWithPhoto(new InputFile(WELCOME_IMAGE_PATH), {
+    caption: t('bot.welcome', { name }, lang),
+  });
 
   // Show main menu
   await showMenu(ctx, 'main');
