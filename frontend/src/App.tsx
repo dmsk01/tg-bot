@@ -1,9 +1,9 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
-import { Suspense, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import { useTranslation } from 'react-i18next';
+import { Suspense, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 
@@ -48,12 +48,23 @@ type AppProps = {
   children: React.ReactNode;
 };
 
+const MIN_LOADER_TIME = 1000;
+
 export default function App({ children }: AppProps) {
   const { i18n } = useTranslation();
   const { user, isLoading, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   useScrollToTop();
   useLanguageSync();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinTimeElapsed(true);
+    }, MIN_LOADER_TIME);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const initApp = async () => {
@@ -112,7 +123,7 @@ export default function App({ children }: AppProps) {
           <MotionLazy>
             <ProgressBar />
 
-            {isLoading ? (
+            {isLoading || !minTimeElapsed ? (
               <Loader />
             ) : (
               <Box

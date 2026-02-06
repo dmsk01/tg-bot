@@ -17,18 +17,27 @@ export function Loader({ text: _text }: LoaderProps) {
       }}
     >
       <Box
-        component="video"
-        autoPlay
-        loop
-        muted
-        playsInline
         sx={{
           width: 200,
           height: 200,
-          objectFit: 'contain',
+          borderRadius: '50%',
+          overflow: 'hidden',
         }}
       >
-        <source src="/loader.mp4" type="video/mp4" />
+        <Box
+          component="video"
+          autoPlay
+          loop
+          muted
+          playsInline
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        >
+          <source src="/loader.mp4" type="video/mp4" />
+        </Box>
       </Box>
     </Box>
   );
