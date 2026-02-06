@@ -844,12 +844,12 @@ Fallback на `http://localhost:3000` - убедиться что в production 
 
 ### Критические (немедленно)
 
-- [ ] Отозвать Telegram Bot Token через @BotFather
-- [ ] Отозвать Replicate API Token в dashboard
+- [x] Отозвать Telegram Bot Token через @BotFather (2026-02-06)
+- [x] Отозвать Replicate API Token в dashboard (2026-02-06)
 - [ ] Удалить .env из git истории (`git filter-repo`)
-- [ ] Сгенерировать новые токены и обновить на сервере
-- [ ] Убрать dev mode bypass из `validate-telegram.middleware.ts`
-- [ ] Добавить валидацию webhook подписи
+- [x] Сгенерировать новые токены и обновить в GitHub Secrets (2026-02-06)
+- [x] Убрать dev mode bypass из `validate-telegram.middleware.ts` (2026-02-06)
+- [x] Добавить валидацию webhook подписи (2026-02-06)
 
 ### Высокие (в течение недели)
 
