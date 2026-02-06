@@ -10,8 +10,6 @@ export interface AuthenticatedRequest extends Request {
   telegramId?: number;
 }
 
-const DEV_TELEGRAM_ID = 12345678;
-
 export function validateTelegramInitData(
   req: AuthenticatedRequest,
   res: Response,
@@ -19,14 +17,6 @@ export function validateTelegramInitData(
 ): void {
   try {
     const initData = req.headers['x-telegram-init-data'] as string;
-
-    // Dev mode bypass
-    if (!initData && configService.isDevelopment) {
-      logger.debug('Dev mode: bypassing Telegram validation');
-      req.telegramId = DEV_TELEGRAM_ID;
-      next();
-      return;
-    }
 
     if (!initData) {
       res.status(401).json({ success: false, error: 'Missing Telegram init data' });
@@ -103,21 +93,7 @@ export async function authenticateUser(
       return;
     }
 
-    let user = await userService.findByTelegramId(req.telegramId);
-
-    // Dev mode: create test user if not exists
-    if (!user && configService.isDevelopment && req.telegramId === DEV_TELEGRAM_ID) {
-      logger.debug('Dev mode: creating test user');
-      user = await userService.createFromTelegram({
-        id: DEV_TELEGRAM_ID,
-        is_bot: false,
-        username: 'dev_user',
-        first_name: 'Dev',
-        language_code: 'ru',
-      });
-      // Give dev user some balance for testing
-      await userService.addBalance(user.id, 1000, 'Dev mode initial balance');
-    }
+    const user = await userService.findByTelegramId(req.telegramId);
 
     if (!user) {
       res.status(404).json({ success: false, error: 'User not found' });
