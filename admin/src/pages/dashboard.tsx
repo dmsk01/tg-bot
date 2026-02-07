@@ -12,7 +12,7 @@ export default function DashboardPage() {
         Dashboard
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={4}>
-        Welcome back, {admin?.firstName || admin?.email}!
+        Welcome back, {admin?.firstName || admin?.username}!
       </Typography>
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>

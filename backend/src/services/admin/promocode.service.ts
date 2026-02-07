@@ -174,7 +174,7 @@ export class PromocodeService {
           createdBy: {
             select: {
               id: true,
-              email: true,
+              username: true,
               firstName: true,
               lastName: true,
             },
@@ -200,7 +200,7 @@ export class PromocodeService {
         createdBy: {
           select: {
             id: true,
-            email: true,
+            username: true,
             firstName: true,
             lastName: true,
           },

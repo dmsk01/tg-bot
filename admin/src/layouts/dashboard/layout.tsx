@@ -118,7 +118,7 @@ export default function DashboardLayout() {
 
           <IconButton onClick={handleMenuOpen} size="small">
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-              {admin?.email?.[0]?.toUpperCase() || 'A'}
+              {admin?.username?.[0]?.toUpperCase() || 'A'}
             </Avatar>
           </IconButton>
 
@@ -131,7 +131,7 @@ export default function DashboardLayout() {
           >
             <MenuItem disabled>
               <Typography variant="body2" color="text.secondary">
-                {admin?.email}
+                {admin?.username}
               </Typography>
             </MenuItem>
             <MenuItem disabled>

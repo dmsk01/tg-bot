@@ -289,7 +289,7 @@ export class AdminUsersService {
       prisma.adminUser.findMany({
         select: {
           id: true,
-          email: true,
+          username: true,
           firstName: true,
           lastName: true,
           role: true,
@@ -320,7 +320,7 @@ export class AdminUsersService {
       data: data as Prisma.AdminUserUpdateInput,
       select: {
         id: true,
-        email: true,
+        username: true,
         firstName: true,
         lastName: true,
         role: true,

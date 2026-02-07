@@ -77,7 +77,7 @@ export class AdminLogService {
           admin: {
             select: {
               id: true,
-              email: true,
+              username: true,
               firstName: true,
               lastName: true,
               role: true,
@@ -101,7 +101,7 @@ export class AdminLogService {
         admin: {
           select: {
             id: true,
-            email: true,
+            username: true,
             firstName: true,
             lastName: true,
             role: true,

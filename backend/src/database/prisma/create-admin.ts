@@ -4,12 +4,17 @@ import bcrypt from 'bcrypt';
 const BCRYPT_ROUNDS = 12;
 
 async function createSuperAdmin() {
-  const email = process.argv[2];
+  const username = process.argv[2];
   const password = process.argv[3];
 
-  if (!email || !password) {
-    console.error('Usage: npx tsx src/database/prisma/create-admin.ts <email> <password>');
-    console.error('Example: npx tsx src/database/prisma/create-admin.ts admin@example.com SecurePassword123');
+  if (!username || !password) {
+    console.error('Usage: npx tsx src/database/prisma/create-admin.ts <username> <password>');
+    console.error('Example: npx tsx src/database/prisma/create-admin.ts admin SecurePassword123');
+    process.exit(1);
+  }
+
+  if (username.length < 3) {
+    console.error('Username must be at least 3 characters long');
     process.exit(1);
   }
 
@@ -18,19 +23,13 @@ async function createSuperAdmin() {
     process.exit(1);
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    console.error('Invalid email format');
-    process.exit(1);
-  }
-
   try {
     const existingAdmin = await prisma.adminUser.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { username: username.toLowerCase() },
     });
 
     if (existingAdmin) {
-      console.error(`Admin with email ${email} already exists`);
+      console.error(`Admin with username ${username} already exists`);
       process.exit(1);
     }
 
@@ -38,7 +37,7 @@ async function createSuperAdmin() {
 
     const admin = await prisma.adminUser.create({
       data: {
-        email: email.toLowerCase(),
+        username: username.toLowerCase(),
         passwordHash,
         role: 'SUPER_ADMIN',
         firstName: 'Super',
@@ -47,7 +46,7 @@ async function createSuperAdmin() {
     });
 
     console.log('✅ Super Admin created successfully!');
-    console.log(`   Email: ${admin.email}`);
+    console.log(`   Username: ${admin.username}`);
     console.log(`   Role: ${admin.role}`);
     console.log(`   ID: ${admin.id}`);
     console.log('\n⚠️  Please save the password securely. It cannot be recovered.');
