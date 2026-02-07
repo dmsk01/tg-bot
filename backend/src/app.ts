@@ -27,7 +27,10 @@ app.use(
   cors({
     origin: configService.isDevelopment
       ? '*'
-      : [configService.telegram.miniAppUrl || ''],
+      : [
+          configService.telegram.miniAppUrl,
+          configService.admin.corsOrigin,
+        ].filter(Boolean) as string[],
     credentials: true,
   })
 );
