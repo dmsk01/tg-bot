@@ -5,6 +5,8 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Send cookies with every request (required for httpOnly auth cookies)
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
@@ -16,11 +18,3 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-
-export const setAuthHeader = (token: string | null) => {
-  if (token) {
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete axiosInstance.defaults.headers.common['Authorization'];
-  }
-};

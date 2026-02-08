@@ -62,11 +62,8 @@ export const useStore = create<StoreState>((set) => ({
   },
 
   checkAuth: async () => {
-    if (!adminApiService.hasToken()) {
-      set({ authLoading: false, isAuthenticated: false });
-      return;
-    }
-
+    // With httpOnly cookies, we can't check if token exists from JS
+    // Just try to get admin info - if it fails, user is not authenticated
     try {
       const admin = await adminApiService.getMe();
       set({ admin, isAuthenticated: true, authLoading: false });

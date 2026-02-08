@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import { createProxyMiddleware } from 'http-proxy-middleware';
@@ -49,6 +50,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Cookie parsing (for httpOnly auth cookies)
+app.use(cookieParser());
 
 // Body parsing
 app.use(express.json());

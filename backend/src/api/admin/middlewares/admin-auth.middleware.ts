@@ -3,6 +3,8 @@ import { adminAuthService } from '../../../services/admin/admin-auth.service.js'
 import { logger } from '../../../common/utils/logger.util.js';
 import type { AdminUser } from '@prisma/client';
 
+const ACCESS_TOKEN_COOKIE = 'admin_access_token';
+
 export interface AdminRequest extends Request {
   admin?: Omit<AdminUser, 'passwordHash'>;
   adminId?: string;
@@ -24,17 +26,17 @@ export async function authenticateAdmin(
   next: NextFunction
 ): Promise<void> {
   try {
-    const authHeader = req.headers.authorization;
+    // Read access token from httpOnly cookie
+    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       res.status(401).json({
         success: false,
-        error: 'Missing or invalid authorization header',
+        error: 'Missing authentication token',
       });
       return;
     }
 
-    const token = authHeader.substring(7);
     const payload = adminAuthService.verifyToken(token);
 
     if (!payload) {

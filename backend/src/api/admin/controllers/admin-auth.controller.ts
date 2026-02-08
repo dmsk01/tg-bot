@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Request, Response, CookieOptions } from 'express';
 import { z } from 'zod';
 import { adminAuthService } from '../../../services/admin/admin-auth.service.js';
 import { adminLogService } from '../../../services/admin/admin-log.service.js';
+import { configService } from '../../../common/config/config.service.js';
 import type { AdminRequest } from '../middlewares/admin-auth.middleware.js';
 import { extractClientInfo } from '../middlewares/admin-auth.middleware.js';
 
@@ -15,9 +16,31 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-const refreshSchema = z.object({
-  refreshToken: z.string().min(1, 'Refresh token is required'),
-});
+// Cookie configuration
+const ACCESS_TOKEN_COOKIE = 'admin_access_token';
+const REFRESH_TOKEN_COOKIE = 'admin_refresh_token';
+
+function getCookieOptions(maxAge: number): CookieOptions {
+  return {
+    httpOnly: true,
+    secure: configService.isProduction,
+    sameSite: 'strict',
+    path: '/',
+    maxAge,
+  };
+}
+
+function setTokenCookies(res: Response, accessToken: string, refreshToken: string): void {
+  // Access token: 15 minutes
+  res.cookie(ACCESS_TOKEN_COOKIE, accessToken, getCookieOptions(15 * 60 * 1000));
+  // Refresh token: 7 days
+  res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+}
+
+function clearTokenCookies(res: Response): void {
+  res.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
+  res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+}
 
 export class AdminAuthController {
   async login(req: Request, res: Response): Promise<void> {
@@ -45,12 +68,13 @@ export class AdminAuthController {
       return;
     }
 
+    // Set tokens in httpOnly cookies
+    setTokenCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+
     res.json({
       success: true,
       data: {
         admin: result.admin,
-        accessToken: result.tokens.accessToken,
-        refreshToken: result.tokens.refreshToken,
       },
     });
   }
@@ -67,6 +91,9 @@ export class AdminAuthController {
       });
     }
 
+    // Clear httpOnly cookies
+    clearTokenCookies(res);
+
     res.json({
       success: true,
       message: 'Logged out successfully',
@@ -74,21 +101,22 @@ export class AdminAuthController {
   }
 
   async refresh(req: Request, res: Response): Promise<void> {
-    const validation = refreshSchema.safeParse(req.body);
+    // Read refresh token from httpOnly cookie
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
 
-    if (!validation.success) {
-      res.status(400).json({
+    if (!refreshToken) {
+      res.status(401).json({
         success: false,
-        error: 'Validation failed',
-        details: validation.error.errors,
+        error: 'No refresh token provided',
       });
       return;
     }
 
-    const { refreshToken } = validation.data;
     const tokens = await adminAuthService.refresh(refreshToken);
 
     if (!tokens) {
+      // Clear invalid cookies
+      clearTokenCookies(res);
       res.status(401).json({
         success: false,
         error: 'Invalid or expired refresh token',
@@ -96,12 +124,12 @@ export class AdminAuthController {
       return;
     }
 
+    // Set new tokens in httpOnly cookies
+    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
+
     res.json({
       success: true,
-      data: {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      },
+      message: 'Tokens refreshed successfully',
     });
   }
 

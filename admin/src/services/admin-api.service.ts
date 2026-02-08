@@ -1,74 +1,40 @@
-import axiosInstance, { setAuthHeader } from '../lib/axios';
+import axiosInstance from '../lib/axios';
 import type {
   AdminUser,
   User,
   Promocode,
   PromocodeUsage,
-  AuthTokens,
   ApiResponse,
   PaginatedResponse,
   PromocodeType,
 } from '../types';
 
-const STORAGE_KEY = 'admin_access_token';
-const REFRESH_KEY = 'admin_refresh_token';
-
 class AdminApiService {
-  constructor() {
-    const token = sessionStorage.getItem(STORAGE_KEY);
-    if (token) {
-      setAuthHeader(token);
-    }
-  }
-
-  // Auth
-  async login(username: string, password: string): Promise<{ admin: AdminUser; tokens: AuthTokens }> {
-    const response = await axiosInstance.post<ApiResponse<{ admin: AdminUser; accessToken: string; refreshToken: string }>>(
+  // Auth - tokens are now stored in httpOnly cookies by the server
+  async login(username: string, password: string): Promise<{ admin: AdminUser }> {
+    const response = await axiosInstance.post<ApiResponse<{ admin: AdminUser }>>(
       '/admin/auth/login',
       { username, password }
     );
 
     if (response.data.success && response.data.data) {
-      const { admin, accessToken, refreshToken } = response.data.data;
-      sessionStorage.setItem(STORAGE_KEY, accessToken);
-      sessionStorage.setItem(REFRESH_KEY, refreshToken);
-      setAuthHeader(accessToken);
-      return { admin, tokens: { accessToken, refreshToken } };
+      return { admin: response.data.data.admin };
     }
 
     throw new Error(response.data.error || 'Login failed');
   }
 
   async logout(): Promise<void> {
-    try {
-      await axiosInstance.post('/admin/auth/logout');
-    } finally {
-      sessionStorage.removeItem(STORAGE_KEY);
-      sessionStorage.removeItem(REFRESH_KEY);
-      setAuthHeader(null);
-    }
+    await axiosInstance.post('/admin/auth/logout');
   }
 
-  async refresh(): Promise<AuthTokens> {
-    const refreshToken = sessionStorage.getItem(REFRESH_KEY);
-    if (!refreshToken) {
-      throw new Error('No refresh token');
+  async refresh(): Promise<void> {
+    // Refresh token is sent automatically via httpOnly cookie
+    const response = await axiosInstance.post<ApiResponse<void>>('/admin/auth/refresh');
+
+    if (!response.data.success) {
+      throw new Error('Token refresh failed');
     }
-
-    const response = await axiosInstance.post<ApiResponse<AuthTokens>>(
-      '/admin/auth/refresh',
-      { refreshToken }
-    );
-
-    if (response.data.success && response.data.data) {
-      const tokens = response.data.data;
-      sessionStorage.setItem(STORAGE_KEY, tokens.accessToken);
-      sessionStorage.setItem(REFRESH_KEY, tokens.refreshToken);
-      setAuthHeader(tokens.accessToken);
-      return tokens;
-    }
-
-    throw new Error('Token refresh failed');
   }
 
   async getMe(): Promise<AdminUser> {
@@ -77,10 +43,6 @@ class AdminApiService {
       return response.data.data;
     }
     throw new Error(response.data.error || 'Failed to get admin info');
-  }
-
-  hasToken(): boolean {
-    return !!sessionStorage.getItem(STORAGE_KEY);
   }
 
   // Users
