@@ -37,7 +37,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string(),
 
   // Admin Panel
-  ADMIN_JWT_SECRET: z.string().optional(),
+  ADMIN_JWT_SECRET: z.string().min(32, 'ADMIN_JWT_SECRET must be at least 32 characters'),
   ADMIN_JWT_ACCESS_EXPIRES: z.string().default('15m'),
   ADMIN_JWT_REFRESH_EXPIRES: z.string().default('7d'),
   ADMIN_CORS_ORIGIN: z.string().optional(),
@@ -138,7 +138,7 @@ export const configService = {
 
   get admin() {
     return {
-      jwtSecret: parsed.data.ADMIN_JWT_SECRET || parsed.data.JWT_SECRET,
+      jwtSecret: parsed.data.ADMIN_JWT_SECRET,
       jwtAccessExpires: parsed.data.ADMIN_JWT_ACCESS_EXPIRES,
       jwtRefreshExpires: parsed.data.ADMIN_JWT_REFRESH_EXPIRES,
       corsOrigin: parsed.data.ADMIN_CORS_ORIGIN,

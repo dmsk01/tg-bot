@@ -186,18 +186,18 @@ jobs:
       # Проверка уязвимостей в backend зависимостях
       # -----------------------------------------------------------------------
       - name: Audit backend dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical
         working-directory: ./backend
-        continue-on-error: true
-        # continue-on-error: не блокируем pipeline, но показываем предупреждения
+        # Падает только при CRITICAL уязвимостях
 
       # -----------------------------------------------------------------------
       # Проверка уязвимостей в frontend зависимостях
       # -----------------------------------------------------------------------
       - name: Audit frontend dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical
         working-directory: ./frontend
-        continue-on-error: true
+        # Падает только при CRITICAL уязвимостях
+        # HIGH (valibot ReDoS) пропускается — транзитивная зависимость @telegram-apps
 
   # ===========================================================================
   # JOB 4: Финальная проверка (зависит от backend и frontend)
@@ -205,8 +205,8 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
-    # Этот job запускается только если backend и frontend успешны
+    needs: [backend, frontend, security]
+    # Этот job запускается только если все проверки успешны (включая security audit)
 
     steps:
       - name: CI Pipeline completed successfully

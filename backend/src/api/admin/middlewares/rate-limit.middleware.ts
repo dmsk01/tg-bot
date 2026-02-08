@@ -2,7 +2,7 @@ import rateLimit from 'express-rate-limit';
 
 export const adminRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 1000, // 1000 requests per minute for admin (dev)
+  max: 100, // 100 requests per minute for admin panel
   message: {
     success: false,
     error: 'Too many requests, please try again later',
