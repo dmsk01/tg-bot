@@ -30,7 +30,10 @@ export function TemplateSelector() {
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} variant="rounded" width={120} height={70} />
+            <Card key={i} sx={{ p: 1.5, minWidth: 120 }}>
+              <Skeleton variant="text" width={80} height={16} />
+              <Skeleton variant="rounded" width={60} height={20} sx={{ mt: 0.5, borderRadius: 3 }} />
+            </Card>
           ))}
         </Box>
       </Box>
