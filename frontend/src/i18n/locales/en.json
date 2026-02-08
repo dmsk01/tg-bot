@@ -37,7 +37,10 @@
     "current": "Current balance",
     "topUp": "Top up",
     "history": "Transaction history",
-    "amount": "{{amount}} RUB"
+    "amount": "{{amount}} RUB",
+    "paymentSuccess": "Payment successful! Balance updated.",
+    "paymentError": "Error creating payment",
+    "paymentNotConfigured": "Payment system is temporarily unavailable"
   },
   "history": {
     "title": "Generation history",

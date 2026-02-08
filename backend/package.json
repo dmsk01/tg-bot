@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@a2seven/yoo-checkout": "^1.1.4",
     "@grammyjs/hydrate": "^1.6.0",
     "@prisma/client": "^6.9.0",
     "axios": "^1.7.9",

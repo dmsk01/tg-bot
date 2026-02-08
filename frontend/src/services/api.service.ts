@@ -2,11 +2,14 @@ import type { AxiosError, AxiosInstance } from 'axios';
 import type {
   User,
   AiModel,
+  Payment,
   Template,
   Generation,
   ApiResponse,
   AspectRatio,
+  Transaction,
   UserSettings,
+  PaymentAmounts,
   PaginatedResponse,
 } from 'src/types';
 
@@ -133,6 +136,50 @@ class ApiService {
 
   async deleteGeneration(id: string): Promise<void> {
     await this.client.delete(`/generation/${id}`);
+  }
+
+  // Payment endpoints
+  async getPaymentAmounts(): Promise<PaymentAmounts> {
+    const response = await this.client.get<ApiResponse<PaymentAmounts>>('/payments/amounts');
+    return response.data.data!;
+  }
+
+  async createPayment(amount: number): Promise<Payment> {
+    const idempotencyKey = crypto.randomUUID();
+    const response = await this.client.post<
+      ApiResponse<{ paymentId: string; confirmationUrl: string; status: string }>
+    >('/payments/create', { amount, idempotencyKey });
+
+    const data = response.data.data!;
+    return {
+      id: data.paymentId,
+      amount,
+      currency: 'RUB',
+      status: data.status as Payment['status'],
+      confirmationUrl: data.confirmationUrl,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  async getPaymentStatus(paymentId: string): Promise<Payment> {
+    const response = await this.client.get<ApiResponse<Payment>>(`/payments/${paymentId}`);
+    return response.data.data!;
+  }
+
+  // Transaction endpoints
+  async getTransactions(
+    page = 1,
+    limit = 20,
+    type?: string
+  ): Promise<{ transactions: Transaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+    const params: Record<string, string | number> = { page, limit };
+    if (type) params.type = type;
+
+    const response = await this.client.get<
+      ApiResponse<{ transactions: Transaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>
+    >('/transactions', { params });
+
+    return response.data.data!;
   }
 }
 

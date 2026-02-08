@@ -68,3 +68,37 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
+
+// Payment types
+export type PaymentStatus = 'CREATED' | 'PENDING' | 'SUCCEEDED' | 'CANCELLED' | 'REFUNDED';
+
+export interface Payment {
+  id: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  confirmationUrl?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface PaymentAmounts {
+  amounts: number[];
+  currency: string;
+  isConfigured: boolean;
+}
+
+export type TransactionType = 'DEPOSIT' | 'WITHDRAWAL' | 'REFUND' | 'BONUS';
+export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  status: TransactionStatus;
+  description?: string;
+  createdAt: string;
+  completedAt?: string;
+}

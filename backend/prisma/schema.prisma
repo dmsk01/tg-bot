@@ -25,6 +25,7 @@ model User {
   lastActiveAt    DateTime  @default(now())
 
   transactions    Transaction[]
+  payments        Payment[]
   generations     Generation[]
   settings        UserSettings?
   apiUsage        ApiUsage[]
@@ -62,23 +63,58 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  CREATED
+  PENDING
+  SUCCEEDED
+  CANCELLED
+  REFUNDED
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  userId            String        @map("user_id")
+  provider          String        @default("yookassa")
+  providerPaymentId String?       @unique @map("provider_payment_id")
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("RUB")
+  status            PaymentStatus @default(CREATED)
+  idempotencyKey    String        @unique @map("idempotency_key")
+  description       String?
+  returnUrl         String?       @map("return_url")
+  confirmationUrl   String?       @map("confirmation_url")
+  webhookData       Json?         @map("webhook_data")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  completedAt       DateTime?     @map("completed_at")
+
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction       Transaction?
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerPaymentId])
+  @@map("payments")
+}
+
 model Transaction {
   id              String              @id @default(uuid())
-  userId          String
+  userId          String              @map("user_id")
   type            TransactionType
   amount          Decimal             @db.Decimal(10, 2)
-  balanceBefore   Decimal             @db.Decimal(10, 2)
-  balanceAfter    Decimal             @db.Decimal(10, 2)
+  balanceBefore   Decimal             @db.Decimal(10, 2) @map("balance_before")
+  balanceAfter    Decimal             @db.Decimal(10, 2) @map("balance_after")
   status          TransactionStatus   @default(PENDING)
-  paymentMethod   String?
-  paymentId       String?             @unique
+  paymentMethod   String?             @map("payment_method")
+  paymentId       String?             @unique @map("payment_id")
   description     String?
   metadata        Json?
-  createdAt       DateTime            @default(now())
-  completedAt     DateTime?
-  generationId    String?
+  createdAt       DateTime            @default(now()) @map("created_at")
+  completedAt     DateTime?           @map("completed_at")
+  generationId    String?             @map("generation_id")
 
   user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment         Payment?            @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([paymentId])
