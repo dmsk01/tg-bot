@@ -8,12 +8,14 @@ export function Loader({ text: _text }: LoaderProps) {
   return (
     <Box
       sx={{
+        position: 'fixed',
+        inset: 0,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
         bgcolor: 'background.default',
+        zIndex: 9999,
       }}
     >
       <Box
