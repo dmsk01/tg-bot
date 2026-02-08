@@ -6,6 +6,8 @@ import Button from '@mui/material/Button';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { logger } from 'src/utils/logger';
+
 import { useAuthContext } from 'src/auth/hooks';
 import { signOut } from 'src/auth/context/jwt/action';
 
@@ -28,7 +30,7 @@ export function SignOutButton({ onClose, sx, ...other }: Props) {
       onClose?.();
       router.refresh();
     } catch (error) {
-      console.error(error);
+      logger.error('Sign out error:', error);
     }
   }, [checkUserSession, onClose, router]);
 

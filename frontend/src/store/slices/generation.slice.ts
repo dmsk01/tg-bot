@@ -1,6 +1,8 @@
 import type { StateCreator } from 'zustand';
 import type { AiModel, Template, Generation, AspectRatio } from 'src/types';
 
+import { logger } from 'src/utils/logger';
+
 import { apiService } from 'src/services/api.service';
 
 export interface GenerationSlice {
@@ -79,7 +81,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
       const { url } = await apiService.uploadImage(file);
       set({ sourceImageUrl: url, isUploading: false });
     } catch (error) {
-      console.error('Failed to upload image:', error);
+      logger.error('Failed to upload image:', error);
       set({ isUploading: false });
       throw error;
     }
@@ -93,7 +95,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
       const templates = await apiService.getTemplates(category);
       set({ templates, isLoadingTemplates: false });
     } catch (error) {
-      console.error('Failed to fetch templates:', error);
+      logger.error('Failed to fetch templates:', error);
       set({ isLoadingTemplates: false });
     }
   },
@@ -107,7 +109,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
         set({ selectedModel: models[0].name });
       }
     } catch (error) {
-      console.error('Failed to fetch models:', error);
+      logger.error('Failed to fetch models:', error);
       set({ models: [], isLoadingModels: false });
     }
   },
@@ -117,7 +119,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
       const { items } = await apiService.getGenerationHistory(page);
       set({ generations: items });
     } catch (error) {
-      console.error('Failed to fetch history:', error);
+      logger.error('Failed to fetch history:', error);
     }
   },
 
@@ -142,7 +144,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
 
       return result.id;
     } catch (error) {
-      console.error('Failed to create generation:', error);
+      logger.error('Failed to create generation:', error);
       set({ isGenerating: false });
       throw error;
     }

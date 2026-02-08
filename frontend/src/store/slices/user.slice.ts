@@ -1,6 +1,8 @@
 import type { StateCreator } from 'zustand';
 import type { User, UserSettings } from 'src/types';
 
+import { logger } from 'src/utils/logger';
+
 import { apiService } from 'src/services/api.service';
 
 export interface UserSlice {
@@ -36,7 +38,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
       const settings = await apiService.getSettings();
       set({ settings });
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      logger.error('Failed to fetch settings:', error);
     }
   },
 
@@ -48,7 +50,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
         set({ user: { ...user, languageCode: lang } });
       }
     } catch (error) {
-      console.error('Failed to update language:', error);
+      logger.error('Failed to update language:', error);
     }
   },
 
@@ -60,7 +62,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
         set({ user: { ...user, isAgeConfirmed: true } });
       }
     } catch (error) {
-      console.error('Failed to confirm age:', error);
+      logger.error('Failed to confirm age:', error);
     }
   },
 
@@ -72,7 +74,7 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
         set({ user: { ...user, balance } });
       }
     } catch (error) {
-      console.error('Failed to refresh balance:', error);
+      logger.error('Failed to refresh balance:', error);
     }
   },
 });

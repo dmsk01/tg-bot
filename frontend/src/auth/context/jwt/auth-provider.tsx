@@ -3,6 +3,8 @@ import type { AuthState } from '../../types';
 import { useSetState } from 'minimal-shared/hooks';
 import { useMemo, useEffect, useCallback } from 'react';
 
+import { logger } from 'src/utils/logger';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { JWT_STORAGE_KEY } from './constant';
@@ -40,7 +42,7 @@ export function AuthProvider({ children }: Props) {
         setState({ user: null, loading: false });
       }
     } catch (error) {
-      console.error(error);
+      logger.error('Error checking user session:', error);
       setState({ user: null, loading: false });
     }
   }, [setState]);

@@ -15,6 +15,8 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { logger } from 'src/utils/logger';
+
 import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaUtils } from 'src/components/hook-form';
 
@@ -78,7 +80,7 @@ export function JwtSignUpView() {
 
       router.refresh();
     } catch (error) {
-      console.error(error);
+      logger.error('Sign up error:', error);
       const feedbackMessage = getErrorMessage(error);
       setErrorMessage(feedbackMessage);
     }

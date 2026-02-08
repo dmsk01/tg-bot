@@ -6,6 +6,8 @@ import { isEqualPath } from 'minimal-shared/utils';
 
 import { usePathname } from 'src/routes/hooks';
 
+import { logger } from 'src/utils/logger';
+
 // ----------------------------------------------------------------------
 
 //  Checks if an anchor element is valid for triggering the progress bar.
@@ -45,9 +47,7 @@ function useProgressBar() {
           NProgress.start();
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Navigation progress error:', error);
-        }
+        logger.error('Navigation progress error:', error);
         NProgress.done();
       }
     };

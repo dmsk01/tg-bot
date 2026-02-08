@@ -2,6 +2,8 @@ import type { AxiosRequestConfig } from 'axios';
 
 import axios from 'axios';
 
+import { logger } from 'src/utils/logger';
+
 import { CONFIG } from 'src/global-config';
 
 // ----------------------------------------------------------------------
@@ -30,7 +32,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
-    console.error('Axios error:', message);
+    logger.error('Axios error:', message);
     return Promise.reject(new Error(message));
   }
 );
@@ -49,7 +51,7 @@ export const fetcher = async <T = unknown>(
 
     return res.data;
   } catch (error) {
-    console.error('Fetcher failed:', error);
+    logger.error('Fetcher failed:', error);
     throw error;
   }
 };

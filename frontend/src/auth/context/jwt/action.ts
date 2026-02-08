@@ -1,3 +1,5 @@
+import { logger } from 'src/utils/logger';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { setSession } from './utils';
@@ -34,7 +36,7 @@ export const signInWithPassword = async ({ email, password }: SignInParams): Pro
 
     setSession(accessToken);
   } catch (error) {
-    console.error('Error during sign in:', error);
+    logger.error('Error during sign in:', error);
     throw error;
   }
 };
@@ -66,7 +68,7 @@ export const signUp = async ({
 
     sessionStorage.setItem(JWT_STORAGE_KEY, accessToken);
   } catch (error) {
-    console.error('Error during sign up:', error);
+    logger.error('Error during sign up:', error);
     throw error;
   }
 };
@@ -78,7 +80,7 @@ export const signOut = async (): Promise<void> => {
   try {
     await setSession(null);
   } catch (error) {
-    console.error('Error during sign out:', error);
+    logger.error('Error during sign out:', error);
     throw error;
   }
 };

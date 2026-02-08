@@ -1,5 +1,7 @@
 import { paths } from 'src/routes/paths';
 
+import { logger } from 'src/utils/logger';
+
 import axios from 'src/lib/axios';
 
 import { JWT_STORAGE_KEY } from './constant';
@@ -21,7 +23,7 @@ export function jwtDecode(token: string) {
 
     return decoded;
   } catch (error) {
-    console.error('Error decoding token:', error);
+    logger.error('Error decoding token:', error);
     throw error;
   }
 }
@@ -44,7 +46,7 @@ export function isValidToken(accessToken: string) {
 
     return decoded.exp > currentTime;
   } catch (error) {
-    console.error('Error during token validation:', error);
+    logger.error('Error during token validation:', error);
     return false;
   }
 }
@@ -61,7 +63,7 @@ export function tokenExpired(exp: number) {
       sessionStorage.removeItem(JWT_STORAGE_KEY);
       window.location.href = paths.auth.jwt.signIn;
     } catch (error) {
-      console.error('Error during token expiration:', error);
+      logger.error('Error during token expiration:', error);
       throw error;
     }
   }, timeLeft);
@@ -88,7 +90,7 @@ export async function setSession(accessToken: string | null) {
       delete axios.defaults.headers.common.Authorization;
     }
   } catch (error) {
-    console.error('Error during set session:', error);
+    logger.error('Error during set session:', error);
     throw error;
   }
 }

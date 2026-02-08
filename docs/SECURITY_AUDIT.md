@@ -34,9 +34,9 @@
 | CRITICAL    | 3       | 3          | 0        |
 | HIGH        | 5       | 5          | 0        |
 | MEDIUM      | 8       | 8          | 0        |
-| LOW         | 4       | 1          | 3        |
+| LOW         | 4       | 4          | 0        |
 
-**Статус:** Все критические, высокие и средние уязвимости исправлены.
+**Статус:** Все уязвимости исправлены.
 
 ---
 
@@ -280,19 +280,37 @@ const allowedOrigins = configService.isDevelopment
 
 ## Низкий приоритет и рекомендации
 
-### LOW-001: Console.log в production ⏳ НЕ ИСПРАВЛЕНО
+### LOW-001: Console.log в production ✅ ИСПРАВЛЕНО
 
-**Статус:** Рекомендация
+**Статус:** Исправлено (2026-02-08)
 
-Удалить или заменить на logger все `console.log`, `console.error`.
+**Что было сделано:**
+1. Создан `frontend/src/utils/logger.ts` — логгер, который работает только в development
+2. Все `console.error` в frontend заменены на `logger.error`
+3. В production консоль остаётся чистой
+
+**Затронутые файлы:**
+- `frontend/src/utils/logger.ts` (новый)
+- `frontend/src/store/slices/*.ts`
+- `frontend/src/services/api.service.ts`
+- `frontend/src/lib/axios.ts`
+- `frontend/src/auth/context/jwt/*.ts`
+- `frontend/src/auth/view/jwt/*.tsx`
+- `frontend/src/components/progress-bar/progress-bar.tsx`
+- `frontend/src/layouts/components/sign-out-button.tsx`
 
 ---
 
-### LOW-002: Retry логика в polling ⏳ НЕ ИСПРАВЛЕНО
+### LOW-002: Retry логика в polling ✅ ИСПРАВЛЕНО
 
-**Статус:** Рекомендация
+**Статус:** Исправлено (2026-02-08)
 
-Добавить exponential backoff при ошибках в `use-language-sync.ts`.
+**Что было сделано:**
+1. Добавлен exponential backoff в `use-language-sync.ts`
+2. При ошибке интервал удваивается (до максимума 5 минут)
+3. При успехе интервал сбрасывается до 30 секунд
+
+**Файл:** `frontend/src/hooks/use-language-sync.ts`
 
 ---
 
@@ -317,11 +335,20 @@ const allowedOrigins = configService.isDevelopment
 
 ---
 
-### LOW-004: HTTP fallback в API URL ⏳ НЕ ИСПРАВЛЕНО
+### LOW-004: HTTP fallback в API URL ✅ ИСПРАВЛЕНО
 
-**Статус:** Рекомендация
+**Статус:** Исправлено (2026-02-08)
 
-Fallback на `http://localhost:3000` — убедиться что в production всегда HTTPS.
+**Что было сделано:**
+1. Добавлена валидация `VITE_API_URL` в `global-config.ts`
+2. В production режиме:
+   - `VITE_API_URL` обязателен (без fallback)
+   - URL должен использовать HTTPS
+3. HTTP localhost разрешён только в development
+
+**Файлы:**
+- `frontend/src/global-config.ts`
+- `frontend/src/services/api.service.ts` (использует CONFIG.serverUrl)
 
 ---
 
@@ -374,10 +401,10 @@ Fallback на `http://localhost:3000` — убедиться что в productio
 
 ### Низкие (при возможности)
 
-- [ ] Убрать console.log из production кода
-- [ ] Добавить retry логику в polling
+- [x] Убрать console.log из production кода (2026-02-08)
+- [x] Добавить retry логику в polling (2026-02-08)
 - [x] httpOnly cookies для JWT токенов (2026-02-08)
-- [ ] Убедиться что нет HTTP fallback в production
+- [x] Убедиться что нет HTTP fallback в production (2026-02-08)
 
 ---
 

@@ -15,7 +15,11 @@ import type {
 
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { logger } from 'src/utils/logger';
+
+import { CONFIG } from 'src/global-config';
+
+const API_URL = CONFIG.serverUrl;
 
 class ApiService {
   private client: AxiosInstance;
@@ -33,7 +37,7 @@ class ApiService {
       (response) => response,
       (error: AxiosError<ApiResponse<unknown>>) => {
         const message = error.response?.data?.error || error.message;
-        console.error('API Error:', message);
+        logger.error('API Error:', message);
         return Promise.reject(new Error(message));
       }
     );
