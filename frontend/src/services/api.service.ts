@@ -21,12 +21,21 @@ import { CONFIG } from 'src/global-config';
 
 const API_URL = CONFIG.serverUrl;
 
+// Remove trailing slash and /api suffix if present to avoid duplication
+function getBaseUrl(url: string): string {
+  const baseUrl = url.replace(/\/+$/, ''); // Remove trailing slashes
+  if (baseUrl.endsWith('/api')) {
+    return baseUrl; // Already has /api
+  }
+  return `${baseUrl}/api`;
+}
+
 class ApiService {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: `${API_URL}/api`,
+      baseURL: getBaseUrl(API_URL),
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
