@@ -34,7 +34,7 @@
 | CRITICAL    | 3       | 3          | 0        |
 | HIGH        | 5       | 5          | 0        |
 | MEDIUM      | 8       | 8          | 0        |
-| LOW         | 4       | 0          | 4        |
+| LOW         | 4       | 1          | 3        |
 
 **Статус:** Все критические, высокие и средние уязвимости исправлены.
 
@@ -296,11 +296,24 @@ const allowedOrigins = configService.isDevelopment
 
 ---
 
-### LOW-003: Токен в sessionStorage ⏳ НЕ ИСПРАВЛЕНО
+### LOW-003: Токен в sessionStorage ✅ ИСПРАВЛЕНО
 
-**Статус:** Рекомендация
+**Статус:** Исправлено (2026-02-08)
 
-JWT токены видны в DevTools. Рассмотреть хранение в httpOnly cookie (требует изменения архитектуры).
+**Что было сделано:**
+1. JWT токены теперь хранятся в httpOnly cookies
+2. Добавлен cookie-parser middleware в backend
+3. Cookies настроены: `httpOnly: true`, `secure: true` (production), `sameSite: 'strict'`
+4. Access token: 15 минут, Refresh token: 7 дней
+5. Frontend больше не использует sessionStorage для токенов
+6. Axios настроен с `withCredentials: true`
+
+**Файлы:**
+- `backend/src/api/admin/controllers/admin-auth.controller.ts`
+- `backend/src/api/admin/middlewares/admin-auth.middleware.ts`
+- `backend/src/app.ts`
+- `admin/src/lib/axios.ts`
+- `admin/src/services/admin-api.service.ts`
 
 ---
 
@@ -326,6 +339,7 @@ Fallback на `http://localhost:3000` — убедиться что в productio
 10. **AuthGuard** корректно реализован в admin panel
 11. **GitHub Secrets** используются для хранения всех секретов
 12. **CI/CD** автоматически генерирует .env файлы при деплое
+13. **httpOnly Cookies** для JWT токенов админки (защита от XSS)
 
 ---
 
@@ -362,7 +376,7 @@ Fallback на `http://localhost:3000` — убедиться что в productio
 
 - [ ] Убрать console.log из production кода
 - [ ] Добавить retry логику в polling
-- [ ] Рассмотреть httpOnly cookie для токенов
+- [x] httpOnly cookies для JWT токенов (2026-02-08)
 - [ ] Убедиться что нет HTTP fallback в production
 
 ---
