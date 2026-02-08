@@ -30,9 +30,17 @@ const changeBalanceSchema = z.object({
   reason: z.string().min(1, 'Reason is required'),
 });
 
+const passwordSchema = z
+  .string()
+  .min(12, 'Password must be at least 12 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+
 const createAdminSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT']),
   firstName: z.string().optional(),
   lastName: z.string().optional(),

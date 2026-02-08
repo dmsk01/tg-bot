@@ -23,14 +23,29 @@ if (configService.isDevelopment) {
 } else {
   app.use(helmet());
 }
+const allowedOrigins = configService.isDevelopment
+  ? [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000',
+    ]
+  : [configService.telegram.miniAppUrl, configService.admin.corsOrigin].filter(
+      Boolean
+    );
+
 app.use(
   cors({
-    origin: configService.isDevelopment
-      ? '*'
-      : [
-          configService.telegram.miniAppUrl,
-          configService.admin.corsOrigin,
-        ].filter(Boolean) as string[],
+    origin: (origin, callback) => {
+      // Allow requests without origin (mobile apps, curl, same-origin)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS not allowed for origin: ${origin}`));
+      }
+    },
     credentials: true,
   })
 );

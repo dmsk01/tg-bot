@@ -9,6 +9,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { fToNow } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
+import { SafeHtml } from 'src/components/safe-html';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { notificationIcons } from './icons';
@@ -28,8 +29,8 @@ export type NotificationItemProps = {
 };
 
 const readerContent = (data: string) => (
-  <Box
-    dangerouslySetInnerHTML={{ __html: data }}
+  <SafeHtml
+    html={data}
     sx={{
       '& p': { m: 0, typography: 'body2' },
       '& a': { color: 'inherit', textDecoration: 'none' },

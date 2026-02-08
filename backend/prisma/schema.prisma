@@ -265,16 +265,18 @@ enum AdminRole {
 }
 
 model AdminUser {
-  id            String      @id @default(uuid())
-  username      String      @unique
-  passwordHash  String      @map("password_hash")
-  firstName     String?     @map("first_name")
-  lastName      String?     @map("last_name")
-  role          AdminRole   @default(MODERATOR)
-  isActive      Boolean     @default(true) @map("is_active")
-  lastLoginAt   DateTime?   @map("last_login_at")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                    String      @id @default(uuid())
+  username              String      @unique
+  passwordHash          String      @map("password_hash")
+  firstName             String?     @map("first_name")
+  lastName              String?     @map("last_name")
+  role                  AdminRole   @default(MODERATOR)
+  isActive              Boolean     @default(true) @map("is_active")
+  lastLoginAt           DateTime?   @map("last_login_at")
+  failedLoginAttempts   Int         @default(0) @map("failed_login_attempts")
+  lockedUntil           DateTime?   @map("locked_until")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
 
   adminLogs     AdminLog[]
   createdPromocodes Promocode[] @relation("PromoCodeCreator")

@@ -7,18 +7,7 @@ import {
 
 const router = Router();
 
-// SSE endpoint for language sync - needs to handle initData from query param
-router.get('/language-events', (req, res, next) => {
-  // Support initData via query param for SSE (EventSource doesn't support headers)
-  if (req.query.initData && !req.headers['x-telegram-init-data']) {
-    req.headers['x-telegram-init-data'] = req.query.initData as string;
-  }
-  next();
-}, validateTelegramInitData, authenticateUser, (req, res) => {
-  userController.subscribeToLanguageEvents(req, res);
-});
-
-// All other routes require Telegram authentication via headers
+// All routes require Telegram authentication via headers
 router.use(validateTelegramInitData);
 router.use(authenticateUser);
 

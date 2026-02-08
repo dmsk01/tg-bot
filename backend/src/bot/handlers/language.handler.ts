@@ -2,7 +2,6 @@ import type { BotContext } from '../middlewares/auth.middleware.js';
 import { t } from '../../common/i18n/i18n.service.js';
 import { userService } from '../../services/user.service.js';
 import { botService } from '../bot.service.js';
-import { sseService } from '../../services/sse.service.js';
 import { showMenu } from '../menu/menu.js';
 
 export async function languageHandler(ctx: BotContext): Promise<void> {
@@ -28,9 +27,6 @@ export async function languageCallbackHandler(ctx: BotContext): Promise<void> {
 
   // Update user in context with new language
   ctx.dbUser = { ...user, languageCode: newLang };
-
-  // Notify frontend about language change via SSE
-  sseService.sendLanguageChanged(user.id, newLang);
 
   await botService.setUserCommands(ctx.chat!.id, newLang);
 

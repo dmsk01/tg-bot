@@ -6,6 +6,8 @@ import { adminLogService } from './admin-log.service.js';
 import type { AdminUser, AdminRole } from '@prisma/client';
 
 const BCRYPT_ROUNDS = 12;
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
 
 export interface TokenPayload {
   sub: string;
@@ -97,21 +99,59 @@ export class AdminAuthService {
       return null;
     }
 
-    const passwordValid = await this.comparePassword(password, admin.passwordHash);
-    if (!passwordValid) {
+    // Check if account is locked
+    if (admin.lockedUntil && admin.lockedUntil > new Date()) {
+      const remainingMinutes = Math.ceil(
+        (admin.lockedUntil.getTime() - Date.now()) / 60000
+      );
       await adminLogService.create({
         adminId: admin.id,
-        action: 'LOGIN_FAILED',
-        details: { reason: 'Invalid password' },
+        action: 'LOGIN_BLOCKED',
+        details: { reason: 'Account locked', remainingMinutes },
         ipAddress,
         userAgent,
       });
       return null;
     }
 
+    const passwordValid = await this.comparePassword(password, admin.passwordHash);
+    if (!passwordValid) {
+      const failedAttempts = admin.failedLoginAttempts + 1;
+      const shouldLock = failedAttempts >= MAX_FAILED_ATTEMPTS;
+      const lockedUntil = shouldLock
+        ? new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000)
+        : null;
+
+      await prisma.adminUser.update({
+        where: { id: admin.id },
+        data: {
+          failedLoginAttempts: failedAttempts,
+          lockedUntil,
+        },
+      });
+
+      await adminLogService.create({
+        adminId: admin.id,
+        action: shouldLock ? 'ACCOUNT_LOCKED' : 'LOGIN_FAILED',
+        details: {
+          reason: 'Invalid password',
+          failedAttempts,
+          ...(shouldLock && { lockedForMinutes: LOCKOUT_DURATION_MINUTES }),
+        },
+        ipAddress,
+        userAgent,
+      });
+      return null;
+    }
+
+    // Reset failed login attempts on successful login
     await prisma.adminUser.update({
       where: { id: admin.id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     });
 
     await adminLogService.create({

@@ -1,23 +1,44 @@
 import { Response } from 'express';
+import { z } from 'zod';
 import type { AuthenticatedRequest } from '../middlewares/validate-telegram.middleware.js';
 import { generationService } from '../../services/ai/generation.service.js';
 import { userService } from '../../services/user.service.js';
 import { modelService } from '../../services/ai/model.service.js';
 import type { AspectRatio } from '../../common/types/index.js';
 
+const MAX_PROMPT_LENGTH = 2000;
+const MAX_NEGATIVE_PROMPT_LENGTH = 1000;
+
+const createGenerationSchema = z.object({
+  model: z.string().min(1, 'Model is required'),
+  prompt: z
+    .string()
+    .min(1, 'Prompt is required')
+    .max(MAX_PROMPT_LENGTH, `Prompt must be less than ${MAX_PROMPT_LENGTH} characters`),
+  negativePrompt: z
+    .string()
+    .max(MAX_NEGATIVE_PROMPT_LENGTH, `Negative prompt must be less than ${MAX_NEGATIVE_PROMPT_LENGTH} characters`)
+    .optional(),
+  templateId: z.string().optional(),
+  aspectRatio: z.enum(['1:1', '16:9', '9:16', '4:3', '3:4']),
+});
+
 export class GenerationController {
   async create(req: AuthenticatedRequest, res: Response): Promise<void> {
     const user = req.user!;
-    const { model, prompt, negativePrompt, templateId, aspectRatio } = req.body;
 
-    // Validate required fields
-    if (!prompt || !model || !aspectRatio) {
+    // Validate request body with zod
+    const validation = createGenerationSchema.safeParse(req.body);
+    if (!validation.success) {
       res.status(400).json({
         success: false,
-        error: 'Missing required fields: prompt, model, aspectRatio',
+        error: validation.error.errors[0]?.message || 'Validation failed',
+        code: 'VALIDATION_ERROR',
       });
       return;
     }
+
+    const { model, prompt, negativePrompt, templateId, aspectRatio } = validation.data;
 
     // Check balance
     const cost = await modelService.getCost(model);
