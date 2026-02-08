@@ -108,14 +108,10 @@ class ApiService {
     const formData = new FormData();
     formData.append('image', file);
 
+    // Don't set Content-Type manually - axios will set it with proper boundary for FormData
     const response = await this.client.post<ApiResponse<{ url: string }>>(
       '/generation/upload',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      formData
     );
     return response.data.data!;
   }
