@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { paymentService, ALLOWED_AMOUNTS } from '../../services/payment/index.js';
 import { webhookService } from '../../services/payment/index.js';
@@ -158,7 +158,7 @@ export class PaymentController {
    * POST /api/webhooks/yookassa
    * Обработчик webhook от YooKassa
    */
-  async handleWebhook(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async handleWebhook(req: Request, res: Response): Promise<void> {
     // Валидация подписи (Basic Auth)
     const authHeader = req.headers.authorization;
     if (!webhookService.validateSignature(authHeader)) {

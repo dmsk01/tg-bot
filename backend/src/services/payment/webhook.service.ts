@@ -63,7 +63,7 @@ class WebhookService {
    * Обработка webhook уведомления
    */
   async handleWebhook(payload: YooKassaWebhookPayload): Promise<WebhookResult> {
-    const { type, event, object } = payload;
+    const { event, object } = payload;
 
     logger.info(`Webhook received: ${event}, payment: ${object.id}`);
 
@@ -197,7 +197,7 @@ class WebhookService {
    */
   private async handlePaymentCanceled(
     paymentId: string,
-    webhookData: YooKassaWebhookPayload['object']
+    _webhookData: YooKassaWebhookPayload['object']
   ): Promise<WebhookResult> {
     try {
       await prisma.payment.update({
