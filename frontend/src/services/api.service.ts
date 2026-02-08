@@ -74,6 +74,15 @@ class ApiService {
     this.initData = initData;
   }
 
+  // DEBUG: Get debug info for troubleshooting
+  getDebugInfo(): string {
+    return JSON.stringify({
+      hasInitData: !!this.initData,
+      initDataLength: this.initData?.length || 0,
+      baseURL: this.client.defaults.baseURL,
+    }, null, 2);
+  }
+
   // User endpoints
   async getMe(): Promise<User> {
     const response = await this.client.get<ApiResponse<User>>('/user/me');

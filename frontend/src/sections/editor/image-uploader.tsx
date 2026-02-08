@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useStore } from 'src/store/store';
+import { apiService } from 'src/services/api.service';
 
 import { Iconify } from 'src/components/iconify';
 import { FileThumbnail } from 'src/components/file-thumbnail';
@@ -37,7 +38,12 @@ export function ImageUploader() {
       }
       try {
         await uploadSourceImage(file);
-      } catch {
+      } catch (error) {
+        // DEBUG: Show debug info on error
+        const debugInfo = apiService.getDebugInfo();
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        // eslint-disable-next-line no-alert
+        alert(`Upload Error:\n${errorMsg}\n\nDebug:\n${debugInfo}`);
         enqueueSnackbar(t('errors.generic'), { variant: 'error' });
       }
     },
