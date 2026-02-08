@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 
 import { useStore } from 'src/store/store';
@@ -22,25 +21,7 @@ export function TemplateSelector() {
     }
   }, [templates, fetchTemplates]);
 
-  if (isLoadingTemplates) {
-    return (
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-          {t('editor.selectTemplate')}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} sx={{ p: 1.5, minWidth: 120 }}>
-              <Skeleton variant="text" width={80} height={16} />
-              <Skeleton variant="rounded" width={60} height={20} sx={{ mt: 0.5, borderRadius: 3 }} />
-            </Card>
-          ))}
-        </Box>
-      </Box>
-    );
-  }
-
-  if (!templates || templates.length === 0) {
+  if (isLoadingTemplates || !templates || templates.length === 0) {
     return null;
   }
 
