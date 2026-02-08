@@ -46,8 +46,15 @@ class ApiService {
 
     // Add initData header to every request
     this.client.interceptors.request.use((config) => {
+      // DEBUG: Log request info
+      console.log('[API] Request:', config.method?.toUpperCase(), config.url);
+      console.log('[API] initData set:', !!this.initData);
+
       if (this.initData) {
         config.headers['X-Telegram-Init-Data'] = this.initData;
+        console.log('[API] Header added, length:', this.initData.length);
+      } else {
+        console.warn('[API] WARNING: No initData available!');
       }
       return config;
     });
@@ -56,13 +63,14 @@ class ApiService {
       (response) => response,
       (error: AxiosError<ApiResponse<unknown>>) => {
         const message = error.response?.data?.error || error.message;
-        logger.error('API Error:', message);
+        console.error('[API] Error:', message, error.response?.status);
         return Promise.reject(new Error(message));
       }
     );
   }
 
   setInitData(initData: string): void {
+    console.log('[API] setInitData called, length:', initData?.length);
     this.initData = initData;
   }
 
