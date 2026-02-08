@@ -33,6 +33,8 @@ function getBaseUrl(url: string): string {
 class ApiService {
   private client: AxiosInstance;
 
+  private initData: string | null = null;
+
   constructor() {
     this.client = axios.create({
       baseURL: getBaseUrl(API_URL),
@@ -40,6 +42,14 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
       },
+    });
+
+    // Add initData header to every request
+    this.client.interceptors.request.use((config) => {
+      if (this.initData) {
+        config.headers['X-Telegram-Init-Data'] = this.initData;
+      }
+      return config;
     });
 
     this.client.interceptors.response.use(
@@ -53,7 +63,7 @@ class ApiService {
   }
 
   setInitData(initData: string): void {
-    this.client.defaults.headers.common['X-Telegram-Init-Data'] = initData;
+    this.initData = initData;
   }
 
   // User endpoints
