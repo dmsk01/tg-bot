@@ -162,7 +162,7 @@ X-Telegram-Init-Data: <initData из Telegram WebApp>
 **Content-Type:** `multipart/form-data`
 
 **Body:**
-- `image` - файл изображения (JPG, PNG, WebP, max 10MB)
+- `image` - файл изображения (JPEG, PNG, WebP, GIF, max 10MB)
 
 **Response:**
 ```json

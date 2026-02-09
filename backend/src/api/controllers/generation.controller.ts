@@ -143,6 +143,25 @@ export class GenerationController {
     });
   }
 
+  
+  async upload(req: AuthenticatedRequest, res: Response): Promise<void> {
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        error: 'No file uploaded',
+      });
+      return;
+    }
+
+    // Build the URL for the uploaded file
+    const url = '/uploads/' + req.file.filename;
+
+    res.json({
+      success: true,
+      data: { url },
+    });
+  }
+
   async delete(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const generation = await generationService.findById(id);
