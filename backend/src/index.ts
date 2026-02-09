@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import app from './app.js';
 import { configService } from './common/config/config.service.js';
 import { logger } from './common/utils/logger.util.js';
@@ -10,6 +12,19 @@ async function bootstrap() {
     // Test database connection
     await prisma.$connect();
     logger.info('Database connected');
+
+    // Ensure upload directories exist
+    const uploadDir = configService.storage.uploadDir;
+    const generatedDir = configService.storage.generatedDir;
+    
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      logger.info('Created upload directory: ' + uploadDir);
+    }
+    if (!fs.existsSync(generatedDir)) {
+      fs.mkdirSync(generatedDir, { recursive: true });
+      logger.info('Created generated directory: ' + generatedDir);
+    }
 
     // Start Express server
     const port = configService.port;
