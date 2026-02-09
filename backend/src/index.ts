@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import app from './app.js';
 import { configService } from './common/config/config.service.js';
 import { logger } from './common/utils/logger.util.js';
