@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { prisma } from '../../database/prisma/client.js';
 import type { Generation, GenerationStatus, GenerationType } from '@prisma/client';
 import { userService } from '../user.service.js';
@@ -7,7 +5,6 @@ import { modelService } from './model.service.js';
 import { replicateService, FLUX_MODELS, type FluxModelName } from './replicate.service.js';
 import { ASPECT_RATIO_DIMENSIONS, type AspectRatio } from '../../common/types/index.js';
 import { logger } from '../../common/utils/logger.util.js';
-import { configService } from '../../common/config/config.service.js';
 
 export interface CreateGenerationParams {
   userId: string;
@@ -93,24 +90,6 @@ export class GenerationService {
     return generation;
   }
 
-  private cleanupUploadedFile(sourceImageUrl: string | undefined): void {
-    if (!sourceImageUrl || !sourceImageUrl.startsWith('/uploads/')) {
-      return;
-    }
-
-    try {
-      const filename = path.basename(sourceImageUrl);
-      const filePath = path.join(configService.storage.uploadDir, filename);
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        logger.info(`Cleaned up uploaded file: ${filename}`);
-      }
-    } catch (error) {
-      logger.warn('Failed to cleanup uploaded file:', error);
-    }
-  }
-
   private isFluxModel(model: string): model is FluxModelName {
     return model in FLUX_MODELS;
   }
@@ -173,7 +152,6 @@ export class GenerationService {
           });
 
           logger.info(`Generation ${generationId} completed successfully`, { resultUrl: imageUrl });
-          this.cleanupUploadedFile(sourceImageUrl);
         } else {
           throw new Error(result.error || 'Generation failed');
         }
@@ -194,7 +172,6 @@ export class GenerationService {
         });
 
         logger.info(`Generation ${generationId} completed (simulated)`);
-        this.cleanupUploadedFile(sourceImageUrl);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Processing failed';
@@ -209,9 +186,6 @@ export class GenerationService {
           processingEndedAt: new Date(),
         },
       });
-
-      // Cleanup uploaded file on failure
-      this.cleanupUploadedFile(sourceImageUrl);
 
       // Refund balance on failure
       await userService.refundBalance(

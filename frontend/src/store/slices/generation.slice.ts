@@ -78,10 +78,16 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
   uploadSourceImage: async (file: File) => {
     set({ isUploading: true });
     try {
-      const { url } = await apiService.uploadImage(file);
-      set({ sourceImageUrl: url, isUploading: false });
+      // Convert file to base64 data URL locally (no server upload needed)
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      set({ sourceImageUrl: base64, isUploading: false });
     } catch (error) {
-      logger.error('Failed to upload image:', error);
+      logger.error('Failed to convert image:', error);
       set({ isUploading: false });
       throw error;
     }

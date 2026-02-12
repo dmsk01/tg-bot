@@ -79,8 +79,7 @@ app.use('/api', apiRoutes);
 // Webhook routes
 app.use('/webhook', webhookRoutes);
 
-// Static files for uploads and generated images
-app.use('/uploads', express.static(configService.storage.uploadDir));
+// Static files for generated images
 app.use('/generated', express.static(configService.storage.generatedDir));
 
 // Proxy to frontend dev server (for ngrok single tunnel setup)
@@ -92,12 +91,11 @@ if (configService.isDevelopment) {
       changeOrigin: true,
       ws: true, // WebSocket support for HMR
       logger: { ...console, log: () => {}, info: () => {}, warn: () => {}, error: () => {} }, // Silent mode
-      // Don't proxy API, webhook, uploads, generated, health routes
+      // Don't proxy API, webhook, generated routes
       pathFilter: (pathname: string) => {
         return (
           !pathname.startsWith('/api') &&
           !pathname.startsWith('/webhook') &&
-          !pathname.startsWith('/uploads') &&
           !pathname.startsWith('/generated')
         );
       },

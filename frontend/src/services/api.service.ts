@@ -128,21 +128,6 @@ class ApiService {
   }
 
   // Generation endpoints
-  async uploadImage(file: File): Promise<{ url: string }> {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const response = await this.client.post<ApiResponse<{ url: string }>>(
-      '/generation/upload',
-      formData
-    );
-
-    // Convert relative URL to absolute URL for image display
-    const relativeUrl = response.data.data!.url;
-    const baseUrl = API_URL.replace(/\/+$/, '');
-    return { url: baseUrl + relativeUrl };
-  }
-
   async createGeneration(params: {
     model: string;
     prompt: string;

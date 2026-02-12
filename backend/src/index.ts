@@ -12,14 +12,8 @@ async function bootstrap() {
     await prisma.$connect();
     logger.info('Database connected');
 
-    // Ensure upload directories exist
-    const uploadDir = configService.storage.uploadDir;
+    // Ensure generated images directory exists
     const generatedDir = configService.storage.generatedDir;
-    
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-      logger.info('Created upload directory: ' + uploadDir);
-    }
     if (!fs.existsSync(generatedDir)) {
       fs.mkdirSync(generatedDir, { recursive: true });
       logger.info('Created generated directory: ' + generatedDir);
