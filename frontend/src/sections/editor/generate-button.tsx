@@ -37,11 +37,17 @@ export function GenerateButton() {
         if (result.status === 'COMPLETED') {
           enqueueSnackbar(t('editor.generationComplete'), { variant: 'success' });
         } else if (result.status === 'FAILED') {
+          const errorMsg = result.errorMessage || 'Unknown error';
+          // eslint-disable-next-line no-alert
+          alert(`Generation failed:\n${errorMsg}`);
           enqueueSnackbar(t('errors.generationFailed'), { variant: 'error' });
         }
       }
     } catch (error) {
-      if ((error as Error).message.includes('Insufficient')) {
+      const errorMsg = (error as Error).message || 'Unknown error';
+      // eslint-disable-next-line no-alert
+      alert(`Error:\n${errorMsg}`);
+      if (errorMsg.includes('Insufficient')) {
         enqueueSnackbar(t('errors.insufficientBalance'), { variant: 'error' });
       } else {
         enqueueSnackbar(t('errors.generic'), { variant: 'error' });

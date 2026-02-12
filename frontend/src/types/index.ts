@@ -46,6 +46,7 @@ export interface Generation {
   status: GenerationStatus;
   sourceImageUrl?: string;
   generatedImageUrl?: string;
+  errorMessage?: string;
   cost: number;
   createdAt: string;
 }
