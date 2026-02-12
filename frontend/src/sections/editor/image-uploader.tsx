@@ -96,17 +96,18 @@ export function ImageUploader() {
         onDragOver={handleDragOver}
         onClick={!sourceImageUrl ? handleClick : undefined}
         sx={{
-          p: 3,
+          p: sourceImageUrl ? 0 : 3,
           cursor: sourceImageUrl ? 'default' : 'pointer',
           border: '2px dashed',
           borderColor: 'divider',
           bgcolor: 'background.neutral',
           transition: 'all 0.2s',
           position: 'relative',
-          minHeight: 160,
+          minHeight: sourceImageUrl ? 'auto' : 160,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
           '&:hover': !sourceImageUrl
             ? {
                 borderColor: 'primary.main',
@@ -131,33 +132,33 @@ export function ImageUploader() {
             </Typography>
           </Box>
         ) : sourceImageUrl ? (
-          <Box sx={{ position: 'relative', maxWidth: '100%', maxHeight: 200 }}>
+          <Box sx={{ position: 'relative', width: '100%' }}>
             <Box
               component="img"
               src={sourceImageUrl}
               alt="Source"
               sx={{
-                maxWidth: '100%',
-                maxHeight: 200,
+                width: '100%',
+                height: 'auto',
                 borderRadius: 1.5,
-                objectFit: 'contain',
+                display: 'block',
               }}
             />
             <Box
               onClick={handleRemove}
               sx={{
                 position: 'absolute',
-                top: -8,
-                right: -8,
+                top: 8,
+                right: 8,
                 width: 24,
                 height: 24,
                 borderRadius: '50%',
-                bgcolor: 'grey.600',
+                bgcolor: 'rgba(0,0,0,0.6)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                '&:hover': { bgcolor: 'grey.700' },
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
               }}
             >
               <Iconify icon="mingcute:close-line" width={14} sx={{ color: 'white' }} />
