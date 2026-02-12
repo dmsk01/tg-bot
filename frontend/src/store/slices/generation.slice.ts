@@ -47,7 +47,7 @@ export interface GenerationSlice {
 }
 
 export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) => ({
-  selectedModel: 'kandinsky-3.1',
+  selectedModel: 'flux-1.1-pro',
   selectedTemplate: null,
   prompt: '',
   negativePrompt: '',
