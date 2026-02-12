@@ -11,7 +11,6 @@ import { useStore } from 'src/store/store';
 import { apiService } from 'src/services/api.service';
 
 import { Iconify } from 'src/components/iconify';
-import { FileThumbnail } from 'src/components/file-thumbnail';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -132,17 +131,38 @@ export function ImageUploader() {
             </Typography>
           </Box>
         ) : sourceImageUrl ? (
-          <FileThumbnail
-            file={sourceImageUrl}
-            previewUrl={sourceImageUrl}
-            showImage
-            onRemove={handleRemove}
-            sx={{
-              width: 200,
-              height: 200,
-              borderRadius: 1.5,
-            }}
-          />
+          <Box sx={{ position: 'relative', maxWidth: '100%', maxHeight: 200 }}>
+            <Box
+              component="img"
+              src={sourceImageUrl}
+              alt="Source"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: 200,
+                borderRadius: 1.5,
+                objectFit: 'contain',
+              }}
+            />
+            <Box
+              onClick={handleRemove}
+              sx={{
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                bgcolor: 'grey.600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'grey.700' },
+              }}
+            >
+              <Iconify icon="mingcute:close-line" width={14} sx={{ color: 'white' }} />
+            </Box>
+          </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
             <Iconify icon="solar:camera-add-bold" width={48} sx={{ color: 'text.disabled' }} />
