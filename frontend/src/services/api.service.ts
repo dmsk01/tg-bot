@@ -136,7 +136,11 @@ class ApiService {
       '/generation/upload',
       formData
     );
-    return response.data.data!;
+
+    // Convert relative URL to absolute URL for image display
+    const relativeUrl = response.data.data!.url;
+    const baseUrl = API_URL.replace(/\/+$/, '');
+    return { url: baseUrl + relativeUrl };
   }
 
   async createGeneration(params: {
