@@ -51,6 +51,7 @@ Thumbs.db
 # Runtime data
 uploads/
 generated/
+deploy/backups/
 tmp/
 temp/
 *.pid
