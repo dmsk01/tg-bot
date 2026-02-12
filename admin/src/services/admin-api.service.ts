@@ -57,12 +57,15 @@ class AdminApiService {
     });
     if (search) params.set('search', search);
 
-    const response = await axiosInstance.get<ApiResponse<PaginatedResponse<User>>>(
+    const response = await axiosInstance.get<ApiResponse<{ users: User[]; pagination: PaginatedResponse<User>['pagination'] }>>(
       `/admin/users?${params}`
     );
 
     if (response.data.success && response.data.data) {
-      return response.data.data;
+      return {
+        items: response.data.data.users,
+        pagination: response.data.data.pagination,
+      };
     }
     throw new Error(response.data.error || 'Failed to get users');
   }
