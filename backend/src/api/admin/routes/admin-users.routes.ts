@@ -14,6 +14,10 @@ router.patch('/:id', requirePermission('block_users'), (req, res) => adminUsersC
 router.post('/:id/balance', requirePermission('change_balance'), (req, res) => adminUsersController.changeBalance(req, res));
 router.get('/:id/transactions', requirePermission('view_data'), (req, res) => adminUsersController.getUserTransactions(req, res));
 router.get('/:id/generations', requirePermission('view_data'), (req, res) => adminUsersController.getUserGenerations(req, res));
+router.get('/:id/logs', requirePermission('view_data'), (req, res) => adminUsersController.getUserLogs(req, res));
+router.get('/:id/generations/export', requirePermission('view_data'), (req, res) => adminUsersController.exportUserGenerations(req, res));
+router.get('/:id/transactions/export', requirePermission('view_data'), (req, res) => adminUsersController.exportUserTransactions(req, res));
+router.get('/:id/logs/export', requirePermission('view_data'), (req, res) => adminUsersController.exportUserLogs(req, res));
 router.delete('/:id', requirePermission('block_users'), (req, res) => adminUsersController.deleteUser(req, res));
 
 export default router;

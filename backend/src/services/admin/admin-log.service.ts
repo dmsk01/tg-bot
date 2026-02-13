@@ -15,6 +15,7 @@ export interface LogFilters {
   adminId?: string;
   action?: string;
   entityType?: string;
+  entityId?: string;
   startDate?: Date;
   endDate?: Date;
 }
@@ -58,6 +59,10 @@ export class AdminLogService {
 
     if (filters.entityType) {
       where.entityType = filters.entityType;
+    }
+
+    if (filters.entityId) {
+      where.entityId = filters.entityId;
     }
 
     if (filters.startDate || filters.endDate) {

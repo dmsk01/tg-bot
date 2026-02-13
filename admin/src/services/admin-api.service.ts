@@ -2,15 +2,19 @@ import axiosInstance from '../lib/axios';
 import type {
   AdminUser,
   User,
+  UserDetail,
   Promocode,
   PromocodeUsage,
   ApiResponse,
   PaginatedResponse,
   PromocodeType,
+  Generation,
+  Transaction,
+  AdminLog,
+  ExportFormat,
 } from '../types';
 
 class AdminApiService {
-  // Auth - tokens are now stored in httpOnly cookies by the server
   async login(username: string, password: string): Promise<{ admin: AdminUser }> {
     const response = await axiosInstance.post<ApiResponse<{ admin: AdminUser }>>(
       '/admin/auth/login',
@@ -29,7 +33,6 @@ class AdminApiService {
   }
 
   async refresh(): Promise<void> {
-    // Refresh token is sent automatically via httpOnly cookie
     const response = await axiosInstance.post<ApiResponse<void>>('/admin/auth/refresh');
 
     if (!response.data.success) {
@@ -45,7 +48,6 @@ class AdminApiService {
     throw new Error(response.data.error || 'Failed to get admin info');
   }
 
-  // Users
   async getUsers(
     page = 1,
     limit = 20,
@@ -70,8 +72,8 @@ class AdminApiService {
     throw new Error(response.data.error || 'Failed to get users');
   }
 
-  async getUser(id: string): Promise<User> {
-    const response = await axiosInstance.get<ApiResponse<User>>(`/admin/users/${id}`);
+  async getUser(id: string): Promise<UserDetail> {
+    const response = await axiosInstance.get<ApiResponse<UserDetail>>(`/admin/users/${id}`);
     if (response.data.success && response.data.data) {
       return response.data.data;
     }
@@ -97,7 +99,99 @@ class AdminApiService {
     throw new Error(response.data.error || 'Failed to update balance');
   }
 
-  // Promocodes
+  async getUserGenerations(
+    id: string,
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<Generation>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await axiosInstance.get<ApiResponse<{ generations: Generation[]; pagination: PaginatedResponse<Generation>['pagination'] }>>(
+      `/admin/users/${id}/generations?${params}`
+    );
+
+    if (response.data.success && response.data.data) {
+      return {
+        items: response.data.data.generations,
+        pagination: response.data.data.pagination,
+      };
+    }
+    throw new Error(response.data.error || 'Failed to get user generations');
+  }
+
+  async getUserTransactions(
+    id: string,
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<Transaction>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await axiosInstance.get<ApiResponse<{ transactions: Transaction[]; pagination: PaginatedResponse<Transaction>['pagination'] }>>(
+      `/admin/users/${id}/transactions?${params}`
+    );
+
+    if (response.data.success && response.data.data) {
+      return {
+        items: response.data.data.transactions,
+        pagination: response.data.data.pagination,
+      };
+    }
+    throw new Error(response.data.error || 'Failed to get user transactions');
+  }
+
+  async getUserLogs(
+    id: string,
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<AdminLog>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await axiosInstance.get<ApiResponse<{ logs: AdminLog[]; pagination: PaginatedResponse<AdminLog>['pagination'] }>>(
+      `/admin/users/${id}/logs?${params}`
+    );
+
+    if (response.data.success && response.data.data) {
+      return {
+        items: response.data.data.logs,
+        pagination: response.data.data.pagination,
+      };
+    }
+    throw new Error(response.data.error || 'Failed to get user logs');
+  }
+
+  async exportUserGenerations(id: string, format: ExportFormat): Promise<Blob> {
+    const response = await axiosInstance.get(
+      `/admin/users/${id}/generations/export?format=${format}`,
+      { responseType: 'blob' }
+    );
+    return response.data;
+  }
+
+  async exportUserTransactions(id: string, format: ExportFormat): Promise<Blob> {
+    const response = await axiosInstance.get(
+      `/admin/users/${id}/transactions/export?format=${format}`,
+      { responseType: 'blob' }
+    );
+    return response.data;
+  }
+
+  async exportUserLogs(id: string, format: ExportFormat): Promise<Blob> {
+    const response = await axiosInstance.get(
+      `/admin/users/${id}/logs/export?format=${format}`,
+      { responseType: 'blob' }
+    );
+    return response.data;
+  }
+
   async getPromocodes(
     page = 1,
     limit = 20,

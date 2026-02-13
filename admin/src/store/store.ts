@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { adminApiService } from '../services/admin-api.service';
-import type { AdminUser, User, Promocode, PaginatedResponse } from '../types';
+import type { AdminUser, User, UserDetail, Promocode, PaginatedResponse, Generation, Transaction, AdminLog, ExportFormat } from '../types';
 
 interface AuthState {
   admin: AdminUser | null;
@@ -22,6 +22,26 @@ interface UsersState {
   updateUserBalance: (id: string, amount: number, reason: string) => Promise<void>;
 }
 
+interface UserDetailState {
+  currentUser: UserDetail | null;
+  userGenerations: Generation[];
+  userGenerationsPagination: PaginatedResponse<Generation>['pagination'] | null;
+  userTransactions: Transaction[];
+  userTransactionsPagination: PaginatedResponse<Transaction>['pagination'] | null;
+  userLogs: AdminLog[];
+  userLogsPagination: PaginatedResponse<AdminLog>['pagination'] | null;
+  userDetailLoading: boolean;
+  userDetailError: string | null;
+  fetchUserDetail: (id: string) => Promise<void>;
+  fetchUserGenerations: (id: string, page?: number, limit?: number) => Promise<void>;
+  fetchUserTransactions: (id: string, page?: number, limit?: number) => Promise<void>;
+  fetchUserLogs: (id: string, page?: number, limit?: number) => Promise<void>;
+  updateCurrentUserBalance: (id: string, amount: number, reason: string) => Promise<void>;
+  toggleUserBlock: (id: string) => Promise<void>;
+  exportUserData: (id: string, type: 'generations' | 'transactions' | 'logs', format: ExportFormat) => Promise<void>;
+  clearUserDetail: () => void;
+}
+
 interface PromocodesState {
   promocodes: Promocode[];
   promocodesPagination: PaginatedResponse<Promocode>['pagination'] | null;
@@ -33,9 +53,9 @@ interface PromocodesState {
   revokePromocode: (id: string) => Promise<void>;
 }
 
-interface StoreState extends AuthState, UsersState, PromocodesState {}
+interface StoreState extends AuthState, UsersState, UserDetailState, PromocodesState {}
 
-export const useStore = create<StoreState>((set) => ({
+export const useStore = create<StoreState>((set, get) => ({
   // Auth state
   admin: null,
   isAuthenticated: false,
@@ -62,8 +82,6 @@ export const useStore = create<StoreState>((set) => ({
   },
 
   checkAuth: async () => {
-    // With httpOnly cookies, we can't check if token exists from JS
-    // Just try to get admin info - if it fails, user is not authenticated
     try {
       const admin = await adminApiService.getMe();
       set({ admin, isAuthenticated: true, authLoading: false });
@@ -72,7 +90,7 @@ export const useStore = create<StoreState>((set) => ({
     }
   },
 
-  clearError: () => set({ authError: null, usersError: null, promocodesError: null }),
+  clearError: () => set({ authError: null, usersError: null, promocodesError: null, userDetailError: null }),
 
   // Users state
   users: [],
@@ -105,6 +123,134 @@ export const useStore = create<StoreState>((set) => ({
       throw error;
     }
   },
+
+  // User Detail state
+  currentUser: null,
+  userGenerations: [],
+  userGenerationsPagination: null,
+  userTransactions: [],
+  userTransactionsPagination: null,
+  userLogs: [],
+  userLogsPagination: null,
+  userDetailLoading: false,
+  userDetailError: null,
+
+  fetchUserDetail: async (id: string) => {
+    set({ userDetailLoading: true, userDetailError: null });
+    try {
+      const user = await adminApiService.getUser(id);
+      set({ currentUser: user, userDetailLoading: false });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to fetch user', userDetailLoading: false });
+    }
+  },
+
+  fetchUserGenerations: async (id: string, page = 1, limit = 20) => {
+    try {
+      const response = await adminApiService.getUserGenerations(id, page, limit);
+      set({
+        userGenerations: response.items,
+        userGenerationsPagination: response.pagination,
+      });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to fetch generations' });
+    }
+  },
+
+  fetchUserTransactions: async (id: string, page = 1, limit = 20) => {
+    try {
+      const response = await adminApiService.getUserTransactions(id, page, limit);
+      set({
+        userTransactions: response.items,
+        userTransactionsPagination: response.pagination,
+      });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to fetch transactions' });
+    }
+  },
+
+  fetchUserLogs: async (id: string, page = 1, limit = 20) => {
+    try {
+      const response = await adminApiService.getUserLogs(id, page, limit);
+      set({
+        userLogs: response.items,
+        userLogsPagination: response.pagination,
+      });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to fetch logs' });
+    }
+  },
+
+  updateCurrentUserBalance: async (id: string, amount: number, reason: string) => {
+    try {
+      const updatedUser = await adminApiService.updateUserBalance(id, amount, reason);
+      set({ currentUser: { ...get().currentUser, ...updatedUser } as UserDetail });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to update balance' });
+      throw error;
+    }
+  },
+
+  toggleUserBlock: async (id: string) => {
+    const currentUser = get().currentUser;
+    if (!currentUser) return;
+
+    try {
+      const updatedUser = await adminApiService.updateUser(id, { isBlocked: !currentUser.isBlocked });
+      set({ currentUser: { ...currentUser, ...updatedUser } as UserDetail });
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to update user' });
+      throw error;
+    }
+  },
+
+  exportUserData: async (id: string, type: 'generations' | 'transactions' | 'logs', format: ExportFormat) => {
+    try {
+      let blob: Blob;
+      let filename: string;
+      const user = get().currentUser;
+      const telegramId = user?.telegramId || id;
+      const date = new Date().toISOString().split('T')[0];
+
+      switch (type) {
+        case 'generations':
+          blob = await adminApiService.exportUserGenerations(id, format);
+          filename = `user_${telegramId}_generations_${date}.${format}`;
+          break;
+        case 'transactions':
+          blob = await adminApiService.exportUserTransactions(id, format);
+          filename = `user_${telegramId}_transactions_${date}.${format}`;
+          break;
+        case 'logs':
+          blob = await adminApiService.exportUserLogs(id, format);
+          filename = `user_${telegramId}_logs_${date}.${format}`;
+          break;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      set({ userDetailError: error instanceof Error ? error.message : 'Failed to export data' });
+      throw error;
+    }
+  },
+
+  clearUserDetail: () => set({
+    currentUser: null,
+    userGenerations: [],
+    userGenerationsPagination: null,
+    userTransactions: [],
+    userTransactionsPagination: null,
+    userLogs: [],
+    userLogsPagination: null,
+    userDetailError: null,
+  }),
 
   // Promocodes state
   promocodes: [],

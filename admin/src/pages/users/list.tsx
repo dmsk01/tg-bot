@@ -12,15 +12,20 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Tooltip,
 } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useStore } from '../../store/store';
+import { paths } from '../../routes/paths';
 import type { User } from '../../types';
 import dayjs from 'dayjs';
 
 export default function UsersListPage() {
+  const navigate = useNavigate();
   const users = useStore((state) => state.users);
   const pagination = useStore((state) => state.usersPagination);
   const isLoading = useStore((state) => state.usersLoading);
@@ -118,16 +123,33 @@ export default function UsersListPage() {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 100,
+      width: 140,
       sortable: false,
       renderCell: (params) => (
-        <IconButton
-          size="small"
-          onClick={() => handleOpenBalanceDialog(params.row)}
-          title="Edit balance"
-        >
-          <AccountBalanceWalletIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Tooltip title="View details">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(paths.users.detail(params.row.id));
+              }}
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit balance">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenBalanceDialog(params.row);
+              }}
+            >
+              <AccountBalanceWalletIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       ),
     },
   ];
@@ -166,6 +188,8 @@ export default function UsersListPage() {
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[10, 20, 50]}
           disableRowSelectionOnClick
+          onRowClick={(params) => navigate(paths.users.detail(params.row.id))}
+          sx={{ cursor: 'pointer' }}
         />
       </Paper>
 

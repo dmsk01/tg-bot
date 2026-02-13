@@ -2,6 +2,8 @@ import { Response } from 'express';
 import { z } from 'zod';
 import { adminUsersService } from '../../../services/admin/admin-users.service.js';
 import { adminAuthService } from '../../../services/admin/admin-auth.service.js';
+import { adminLogService } from '../../../services/admin/admin-log.service.js';
+import { exportService } from '../../../services/admin/export.service.js';
 import type { AdminRequest } from '../middlewares/admin-auth.middleware.js';
 import { extractClientInfo } from '../middlewares/admin-auth.middleware.js';
 
@@ -28,6 +30,10 @@ const updateUserSchema = z.object({
 const changeBalanceSchema = z.object({
   amount: z.number(),
   reason: z.string().min(1, 'Reason is required'),
+});
+
+const exportFormatSchema = z.object({
+  format: z.enum(['csv', 'xlsx']).optional().default('csv'),
 });
 
 const passwordSchema = z
@@ -213,6 +219,153 @@ export class AdminUsersController {
         },
       },
     });
+  }
+
+  async getUserLogs(req: AdminRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const pagination = paginationSchema.parse(req.query);
+
+    const { logs, total } = await adminLogService.findMany(
+      { entityType: 'User', entityId: id },
+      { page: pagination.page, limit: pagination.limit }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        logs,
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total,
+          totalPages: Math.ceil(total / pagination.limit),
+        },
+      },
+    });
+  }
+
+  async exportUserGenerations(req: AdminRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const { format } = exportFormatSchema.parse(req.query);
+
+    const { generations } = await adminUsersService.getUserGenerations(id, { page: 1, limit: 10000 });
+
+    const columns = [
+      { key: 'id', header: 'ID', width: 36 },
+      { key: 'createdAt', header: 'Date', width: 20 },
+      { key: 'generationType', header: 'Type', width: 15 },
+      { key: 'model', header: 'Model', width: 20 },
+      { key: 'prompt', header: 'Prompt', width: 50 },
+      { key: 'status', header: 'Status', width: 12 },
+      { key: 'cost', header: 'Cost', width: 10 },
+    ];
+
+    const data = generations.map(g => {
+      const gen = g as Record<string, unknown>;
+      return {
+        id: gen.id,
+        createdAt: new Date(gen.createdAt as string).toISOString(),
+        generationType: gen.generationType,
+        model: gen.model,
+        prompt: gen.prompt,
+        status: gen.status,
+        cost: Number(gen.cost).toFixed(2),
+      };
+    });
+
+    if (format === 'xlsx') {
+      const buffer = await exportService.exportToExcel(data, columns, 'Generations');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-generations.xlsx`);
+      res.send(buffer);
+    } else {
+      const csv = exportService.exportToCsv(data, columns);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-generations.csv`);
+      res.send(csv);
+    }
+  }
+
+  async exportUserTransactions(req: AdminRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const { format } = exportFormatSchema.parse(req.query);
+
+    const { transactions } = await adminUsersService.getUserTransactions(id, { page: 1, limit: 10000 });
+
+    const columns = [
+      { key: 'id', header: 'ID', width: 36 },
+      { key: 'createdAt', header: 'Date', width: 20 },
+      { key: 'type', header: 'Type', width: 12 },
+      { key: 'amount', header: 'Amount', width: 12 },
+      { key: 'balanceBefore', header: 'Balance Before', width: 15 },
+      { key: 'balanceAfter', header: 'Balance After', width: 15 },
+      { key: 'status', header: 'Status', width: 12 },
+      { key: 'description', header: 'Description', width: 30 },
+    ];
+
+    const data = transactions.map(t => {
+      const tx = t as Record<string, unknown>;
+      return {
+        id: tx.id,
+        createdAt: new Date(tx.createdAt as string).toISOString(),
+        type: tx.type,
+        amount: Number(tx.amount).toFixed(2),
+        balanceBefore: Number(tx.balanceBefore).toFixed(2),
+        balanceAfter: Number(tx.balanceAfter).toFixed(2),
+        status: tx.status,
+        description: tx.description || '',
+      };
+    });
+
+    if (format === 'xlsx') {
+      const buffer = await exportService.exportToExcel(data, columns, 'Transactions');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-transactions.xlsx`);
+      res.send(buffer);
+    } else {
+      const csv = exportService.exportToCsv(data, columns);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-transactions.csv`);
+      res.send(csv);
+    }
+  }
+
+  async exportUserLogs(req: AdminRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const { format } = exportFormatSchema.parse(req.query);
+
+    const { logs } = await adminLogService.findMany(
+      { entityType: 'User', entityId: id },
+      { page: 1, limit: 10000 }
+    );
+
+    const columns = [
+      { key: 'id', header: 'ID', width: 36 },
+      { key: 'createdAt', header: 'Date', width: 20 },
+      { key: 'adminUsername', header: 'Admin', width: 20 },
+      { key: 'action', header: 'Action', width: 20 },
+      { key: 'details', header: 'Details', width: 50 },
+    ];
+
+    const data = logs.map(l => ({
+      id: l.id,
+      createdAt: new Date(l.createdAt).toISOString(),
+      adminUsername: (l as { admin?: { username?: string } }).admin?.username || '-',
+      action: l.action,
+      details: l.details ? JSON.stringify(l.details) : '',
+    }));
+
+    if (format === 'xlsx') {
+      const buffer = await exportService.exportToExcel(data, columns, 'Admin Logs');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-logs.xlsx`);
+      res.send(buffer);
+    } else {
+      const csv = exportService.exportToCsv(data, columns);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=user-${id}-logs.csv`);
+      res.send(csv);
+    }
   }
 
   async deleteUser(req: AdminRequest, res: Response): Promise<void> {

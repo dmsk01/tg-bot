@@ -89,3 +89,73 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+// User Detail Types
+export interface UserDetail extends User {
+  lastActiveAt?: string;
+  referralCode?: string;
+  _count?: {
+    generations: number;
+    transactions: number;
+    promocodeUsages?: number;
+  };
+}
+
+// Generation Types
+export type GenerationType = 'TEXT_TO_IMAGE' | 'IMAGE_TO_IMAGE' | 'INPAINTING';
+export type GenerationStatus = 'PENDING' | 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'MODERATED';
+
+export interface Generation {
+  id: string;
+  userId: string;
+  generationType: GenerationType;
+  model: string;
+  prompt: string;
+  negativePrompt?: string;
+  status: GenerationStatus;
+  cost: number;
+  resultUrl?: string;
+  resultTelegramFileId?: string;
+  errorMessage?: string;
+  moderationReason?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+// Transaction Types
+export type TransactionType = 'DEPOSIT' | 'WITHDRAWAL' | 'REFUND' | 'BONUS';
+export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  type: TransactionType;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  status: TransactionStatus;
+  description?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+// Admin Log Types
+export interface AdminLog {
+  id: string;
+  adminId: string;
+  action: string;
+  entityType?: string;
+  entityId?: string;
+  details?: Record<string, unknown>;
+  createdAt: string;
+  admin?: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    role?: AdminRole;
+  };
+}
+
+// Export Types
+export type ExportFormat = 'csv' | 'xlsx';

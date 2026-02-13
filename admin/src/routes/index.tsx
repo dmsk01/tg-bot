@@ -15,6 +15,7 @@ const Loading = () => (
 const LoginPage = lazy(() => import('../pages/login'));
 const DashboardPage = lazy(() => import('../pages/dashboard'));
 const UsersListPage = lazy(() => import('../pages/users/list'));
+const UserDetailPage = lazy(() => import('../pages/users/detail'));
 const PromocodesListPage = lazy(() => import('../pages/promocodes/list'));
 const CreatePromocodePage = lazy(() => import('../pages/promocodes/create'));
 
@@ -47,11 +48,24 @@ export const router = createBrowserRouter([
       },
       {
         path: 'users',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <UsersListPage />
-          </Suspense>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<Loading />}>
+                <UsersListPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<Loading />}>
+                <UserDetailPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'promocodes',

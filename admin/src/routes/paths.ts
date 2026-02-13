@@ -1,7 +1,10 @@
 export const paths = {
   root: '/',
   login: '/login',
-  users: '/users',
+  users: {
+    root: '/users',
+    detail: (id: string) => `/users/${id}`,
+  },
   promocodes: {
     root: '/promocodes',
     create: '/promocodes/create',
