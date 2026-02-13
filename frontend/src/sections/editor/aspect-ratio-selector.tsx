@@ -44,8 +44,7 @@ export function AspectRatioSelector() {
             px: 2,
             py: 0.75,
             borderRadius: '8px !important',
-            border: '1px solid',
-            borderColor: 'divider',
+            border: 'none',
             '&.Mui-selected': {
               bgcolor: 'primary.main',
               color: 'primary.contrastText',
