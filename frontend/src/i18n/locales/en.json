@@ -59,6 +59,11 @@
     "insufficientBalance": "Insufficient balance",
     "generationFailed": "Failed to generate image"
   },
+  "blocked": {
+    "title": "Access Restricted",
+    "message": "Your account has been blocked. If you believe this is a mistake, please contact support.",
+    "support": "Contact Support"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

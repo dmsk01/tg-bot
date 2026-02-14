@@ -9,6 +9,7 @@ export interface UserSlice {
   user: User | null;
   settings: UserSettings | null;
   isLoading: boolean;
+  isBlocked: boolean;
   error: string | null;
   fetchUser: () => Promise<void>;
   fetchSettings: () => Promise<void>;
@@ -21,15 +22,18 @@ export const createUserSlice: StateCreator<UserSlice> = (set, get) => ({
   user: null,
   settings: null,
   isLoading: false,
+  isBlocked: false,
   error: null,
 
   fetchUser: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, isBlocked: false });
     try {
       const user = await apiService.getMe();
       set({ user, isLoading: false });
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+      const errorMessage = (error as Error).message;
+      const blocked = errorMessage.toLowerCase().includes('blocked');
+      set({ error: errorMessage, isLoading: false, isBlocked: blocked });
     }
   },
 

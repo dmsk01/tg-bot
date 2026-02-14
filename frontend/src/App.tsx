@@ -1,11 +1,14 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider, closeSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { Suspense, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+
+import { Iconify } from 'src/components/iconify';
 
 import { usePathname } from 'src/routes/hooks';
 
@@ -21,6 +24,7 @@ import { defaultSettings, SettingsProvider } from 'src/components/settings';
 
 import { Header, Navigation } from 'src/sections/layout';
 import { Loader, AgeConfirmation } from 'src/sections/common';
+import { BlockedView } from 'src/sections/error';
 
 // ----------------------------------------------------------------------
 
@@ -52,7 +56,7 @@ const MIN_LOADER_TIME = 1000;
 
 export default function App({ children }: AppProps) {
   const { i18n } = useTranslation();
-  const { user, isLoading, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
+  const { user, isLoading, isBlocked, fetchUser, showAgeConfirmModal, setShowAgeConfirmModal } = useStore();
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   useScrollToTop();
@@ -119,12 +123,23 @@ export default function App({ children }: AppProps) {
         <SnackbarProvider
           maxSnack={3}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          action={(snackbarId) => (
+            <IconButton
+              size="small"
+              onClick={() => closeSnackbar(snackbarId)}
+              sx={{ color: 'inherit' }}
+            >
+              <Iconify icon="mingcute:close-line" width={20} />
+            </IconButton>
+          )}
         >
           <MotionLazy>
             <ProgressBar />
 
             {isLoading || !minTimeElapsed ? (
               <Loader />
+            ) : isBlocked ? (
+              <BlockedView />
             ) : (
               <Box
                 sx={{
@@ -150,7 +165,7 @@ export default function App({ children }: AppProps) {
               </Box>
             )}
 
-            {showAgeConfirmModal && <AgeConfirmation />}
+            {showAgeConfirmModal && !isBlocked && <AgeConfirmation />}
           </MotionLazy>
         </SnackbarProvider>
       </ThemeProvider>

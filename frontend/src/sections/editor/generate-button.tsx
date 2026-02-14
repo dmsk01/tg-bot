@@ -76,6 +76,10 @@ export function GenerateButton() {
           background: cosmicGradients.primary,
           '&:hover': {
             background: cosmicGradients.primaryHover,
+            color: 'common.white',
+          },
+          '&:active': {
+            color: 'common.white',
           },
           '&.Mui-disabled': {
             color: 'common.white',
