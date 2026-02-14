@@ -1,6 +1,6 @@
 import { useSnackbar } from 'notistack';
-import { useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,6 +11,7 @@ import { useStore } from 'src/store/store';
 import { apiService } from 'src/services/api.service';
 
 import { Iconify } from 'src/components/iconify';
+import { MaskPreview, MaskEditorModal } from 'src/components/mask-editor';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -19,11 +20,15 @@ export function ImageUploader() {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [maskEditorOpen, setMaskEditorOpen] = useState(false);
 
   const sourceImageUrl = useStore((state) => state.sourceImageUrl);
+  const maskImageUrl = useStore((state) => state.maskImageUrl);
   const isUploading = useStore((state) => state.isUploading);
   const uploadSourceImage = useStore((state) => state.uploadSourceImage);
   const clearSourceImage = useStore((state) => state.clearSourceImage);
+  const setMaskImageUrl = useStore((state) => state.setMaskImageUrl);
+  const clearMask = useStore((state) => state.clearMask);
 
   const handleFileSelect = useCallback(
     async (file: File) => {
@@ -80,6 +85,23 @@ export function ImageUploader() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleOpenMaskEditor = () => {
+    setMaskEditorOpen(true);
+  };
+
+  const handleCloseMaskEditor = () => {
+    setMaskEditorOpen(false);
+  };
+
+  const handleApplyMask = (maskBase64: string) => {
+    setMaskImageUrl(maskBase64);
+    setMaskEditorOpen(false);
+  };
+
+  const handleClearMask = () => {
+    clearMask();
   };
 
   return (
@@ -144,24 +166,63 @@ export function ImageUploader() {
                 display: 'block',
               }}
             />
+
+            {/* Mask preview overlay */}
+            {maskImageUrl && (
+              <MaskPreview
+                maskUrl={maskImageUrl}
+                onEdit={handleOpenMaskEditor}
+                onClear={handleClearMask}
+              />
+            )}
+
+            {/* Control buttons */}
             <Box
-              onClick={handleRemove}
               sx={{
                 position: 'absolute',
                 top: 8,
                 right: 8,
-                width: 24,
-                height: 24,
-                borderRadius: '50%',
-                bgcolor: 'rgba(0,0,0,0.6)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                gap: 0.5,
               }}
             >
-              <Iconify icon="mingcute:close-line" width={14} sx={{ color: 'white' }} />
+              {/* Mask editor button */}
+              {!maskImageUrl && (
+                <Box
+                  onClick={handleOpenMaskEditor}
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(0,0,0,0.6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: 'primary.main' },
+                  }}
+                >
+                  <Iconify icon="solar:copy-bold" width={16} sx={{ color: 'white' }} />
+                </Box>
+              )}
+
+              {/* Remove image button */}
+              <Box
+                onClick={handleRemove}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(0,0,0,0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                }}
+              >
+                <Iconify icon="mingcute:close-line" width={14} sx={{ color: 'white' }} />
+              </Box>
             </Box>
           </Box>
         ) : (
@@ -176,6 +237,16 @@ export function ImageUploader() {
           </Box>
         )}
       </Card>
+
+      {/* Mask editor modal */}
+      {sourceImageUrl && (
+        <MaskEditorModal
+          open={maskEditorOpen}
+          imageUrl={sourceImageUrl}
+          onClose={handleCloseMaskEditor}
+          onApply={handleApplyMask}
+        />
+      )}
     </Box>
   );
 }

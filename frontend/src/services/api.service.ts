@@ -133,6 +133,8 @@ class ApiService {
     templateId?: string;
     aspectRatio: AspectRatio;
     sourceImageUrl?: string;
+    maskImageUrl?: string;
+    generationType?: 'TEXT_TO_IMAGE' | 'IMAGE_TO_IMAGE' | 'INPAINTING';
   }): Promise<{ id: string; status: string; cost: number }> {
     const response = await this.client.post<
       ApiResponse<{ id: string; status: string; cost: number }>

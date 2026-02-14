@@ -64,6 +64,15 @@
     "message": "Your account has been blocked. If you believe this is a mistake, please contact support.",
     "support": "Contact Support"
   },
+  "maskEditor": {
+    "title": "Select Area",
+    "brush": "Brush",
+    "lasso": "Lasso",
+    "closeLasso": "Close",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "apply": "Apply"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

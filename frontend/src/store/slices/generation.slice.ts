@@ -13,6 +13,7 @@ export interface GenerationSlice {
   negativePrompt: string;
   aspectRatio: AspectRatio;
   sourceImageUrl: string | null;
+  maskImageUrl: string | null;
 
   // Data
   templates: Template[];
@@ -35,6 +36,8 @@ export interface GenerationSlice {
 
   uploadSourceImage: (file: File) => Promise<void>;
   clearSourceImage: () => void;
+  setMaskImageUrl: (url: string | null) => void;
+  clearMask: () => void;
 
   fetchTemplates: (category?: string) => Promise<void>;
   fetchModels: () => Promise<void>;
@@ -53,6 +56,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
   negativePrompt: '',
   aspectRatio: '1:1',
   sourceImageUrl: null,
+  maskImageUrl: null,
 
   templates: [],
   models: [],
@@ -93,7 +97,10 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
     }
   },
 
-  clearSourceImage: () => set({ sourceImageUrl: null }),
+  clearSourceImage: () => set({ sourceImageUrl: null, maskImageUrl: null }),
+
+  setMaskImageUrl: (url) => set({ maskImageUrl: url }),
+  clearMask: () => set({ maskImageUrl: null }),
 
   fetchTemplates: async (category?: string) => {
     set({ isLoadingTemplates: true });
@@ -130,11 +137,26 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
   },
 
   createGeneration: async () => {
-    const { selectedModel, prompt, negativePrompt, selectedTemplate, aspectRatio, sourceImageUrl } =
-      get();
+    const {
+      selectedModel,
+      prompt,
+      negativePrompt,
+      selectedTemplate,
+      aspectRatio,
+      sourceImageUrl,
+      maskImageUrl,
+    } = get();
 
     if (!prompt.trim()) {
       return null;
+    }
+
+    // Determine generation type based on available inputs
+    let generationType: 'TEXT_TO_IMAGE' | 'IMAGE_TO_IMAGE' | 'INPAINTING' = 'TEXT_TO_IMAGE';
+    if (sourceImageUrl && maskImageUrl) {
+      generationType = 'INPAINTING';
+    } else if (sourceImageUrl) {
+      generationType = 'IMAGE_TO_IMAGE';
     }
 
     set({ isGenerating: true });
@@ -146,6 +168,8 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
         templateId: selectedTemplate?.id,
         aspectRatio,
         sourceImageUrl: sourceImageUrl || undefined,
+        maskImageUrl: maskImageUrl || undefined,
+        generationType,
       });
 
       return result.id;
@@ -179,6 +203,7 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
       prompt: '',
       negativePrompt: '',
       sourceImageUrl: null,
+      maskImageUrl: null,
       currentGeneration: null,
     }),
 });
