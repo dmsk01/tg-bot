@@ -41,7 +41,7 @@ export function ImageUploader() {
         // DEBUG: Show debug info on error
         const debugInfo = apiService.getDebugInfo();
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        // eslint-disable-next-line no-alert
+         
         alert(`Upload Error:\n${errorMsg}\n\nDebug:\n${debugInfo}`);
         enqueueSnackbar(t('errors.generic'), { variant: 'error' });
       }

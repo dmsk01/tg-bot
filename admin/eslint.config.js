@@ -20,4 +20,25 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  // Disable react-refresh for theme components and non-component files
+  {
+    files: ['**/theme/**/*.{ts,tsx}', '**/routes/index.tsx', '**/auth/context/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  // Disable empty-object-type for type declaration files (MUI theme extensions)
+  {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+  // Allow any in hook-form wrappers
+  {
+    files: ['**/components/hook-form/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 ])

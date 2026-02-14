@@ -15,8 +15,6 @@ import type {
 
 import axios from 'axios';
 
-import { logger } from 'src/utils/logger';
-
 import { CONFIG } from 'src/global-config';
 
 const API_URL = CONFIG.serverUrl;

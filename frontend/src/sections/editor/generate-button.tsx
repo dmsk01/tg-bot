@@ -38,14 +38,14 @@ export function GenerateButton() {
           enqueueSnackbar(t('editor.generationComplete'), { variant: 'success' });
         } else if (result.status === 'FAILED') {
           const errorMsg = result.errorMessage || 'Unknown error';
-          // eslint-disable-next-line no-alert
+           
           alert(`Generation failed:\n${errorMsg}`);
           enqueueSnackbar(t('errors.generationFailed'), { variant: 'error' });
         }
       }
     } catch (error) {
       const errorMsg = (error as Error).message || 'Unknown error';
-      // eslint-disable-next-line no-alert
+       
       alert(`Error:\n${errorMsg}`);
       if (errorMsg.includes('Insufficient')) {
         enqueueSnackbar(t('errors.insufficientBalance'), { variant: 'error' });

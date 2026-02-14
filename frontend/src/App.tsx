@@ -1,14 +1,12 @@
 import 'src/global.css';
 import 'src/i18n/i18n';
 
-import { SnackbarProvider, closeSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { Suspense, useState, useEffect } from 'react';
+import { closeSnackbar, SnackbarProvider } from 'notistack';
 
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-
-import { Iconify } from 'src/components/iconify';
 
 import { usePathname } from 'src/routes/hooks';
 
@@ -18,13 +16,14 @@ import { useStore } from 'src/store/store';
 import { apiService } from 'src/services/api.service';
 import { themeConfig, ThemeProvider } from 'src/theme';
 
+import { Iconify } from 'src/components/iconify';
 import { ProgressBar } from 'src/components/progress-bar';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import { defaultSettings, SettingsProvider } from 'src/components/settings';
 
+import { BlockedView } from 'src/sections/error';
 import { Header, Navigation } from 'src/sections/layout';
 import { Loader, AgeConfirmation } from 'src/sections/common';
-import { BlockedView } from 'src/sections/error';
 
 // ----------------------------------------------------------------------
 
