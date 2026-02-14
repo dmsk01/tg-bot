@@ -202,7 +202,7 @@ export function ImageUploader() {
                     '&:hover': { bgcolor: 'primary.main' },
                   }}
                 >
-                  <Iconify icon="solar:copy-bold" width={16} sx={{ color: 'white' }} />
+                  <Iconify icon="solar:pen-bold" width={16} sx={{ color: 'white' }} />
                 </Box>
               )}
 
