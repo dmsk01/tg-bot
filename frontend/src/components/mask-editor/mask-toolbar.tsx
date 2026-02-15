@@ -3,12 +3,24 @@ import type { MaskToolbarProps } from './types';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
-import Slider from '@mui/material/Slider';
 import Button from '@mui/material/Button';
+import Slider from '@mui/material/Slider';
+import SvgIcon from '@mui/material/SvgIcon';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { Iconify } from 'src/components/iconify';
+
+function PolygonIcon({ size = 20 }: { size?: number }) {
+  return (
+    <SvgIcon sx={{ width: size, height: size }}>
+      <path
+        fill="currentColor"
+        d="M12 2L3 7v10l9 5l9-5V7l-9-5zm0 2.18l6 3.33v6.98l-6 3.33l-6-3.33V7.51l6-3.33z"
+      />
+    </SvgIcon>
+  );
+}
 
 export function MaskToolbar({
   tool,
@@ -44,7 +56,7 @@ export function MaskToolbar({
           <Iconify icon="solar:pen-bold" width={20} />
         </ToggleButton>
         <ToggleButton value="lasso" aria-label={t('maskEditor.lasso')}>
-          <Iconify icon="ph:polygon-bold" width={20} />
+          <PolygonIcon size={20} />
         </ToggleButton>
       </ToggleButtonGroup>
 
