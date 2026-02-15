@@ -120,8 +120,8 @@ export function ImageUploader() {
         sx={{
           p: sourceImageUrl ? 0 : 3,
           cursor: sourceImageUrl ? 'default' : 'pointer',
-          border: '2px dashed',
-          borderColor: 'divider',
+          border: sourceImageUrl ? 'none' : '2px dashed',
+          borderColor: sourceImageUrl ? 'transparent' : 'divider',
           bgcolor: 'background.neutral',
           transition: 'all 0.2s',
           position: 'relative',

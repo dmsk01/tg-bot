@@ -44,7 +44,7 @@ export function MaskToolbar({
           <Iconify icon="solar:pen-bold" width={20} />
         </ToggleButton>
         <ToggleButton value="lasso" aria-label={t('maskEditor.lasso')}>
-          <Iconify icon="solar:copy-bold" width={20} />
+          <Iconify icon="ph:polygon-bold" width={20} />
         </ToggleButton>
       </ToggleButtonGroup>
 
