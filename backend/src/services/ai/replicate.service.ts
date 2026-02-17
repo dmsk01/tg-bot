@@ -63,6 +63,17 @@ export interface ReplicatePrediction {
   };
 }
 
+
+/**
+ * Convert Replicate output to string URL.
+ * Replicate SDK may return FileOutput objects instead of plain strings.
+ */
+function toImageUrl(output: unknown): string {
+  if (typeof output === 'string') {
+    return output;
+  }
+  return String(output);
+}
 class ReplicateService {
   private client: Replicate | null = null;
 
@@ -113,13 +124,14 @@ class ReplicateService {
       // Create prediction and wait for result
       const output = await client.run(modelId as `${string}/${string}`, { input });
 
-      // Handle the output
-      const imageUrl = Array.isArray(output) ? output[0] : output;
+      // Handle the output - convert FileOutput to string URL
+      const rawOutput = Array.isArray(output) ? output[0] : output;
+      const imageUrl = toImageUrl(rawOutput);
 
       return {
         id: `flux-${Date.now()}`,
         status: 'succeeded',
-        output: imageUrl as string,
+        output: imageUrl,
       };
     } catch (error) {
       logger.error('Replicate text-to-image failed:', error);
@@ -244,12 +256,13 @@ class ReplicateService {
       }
 
       const output = await client.run(modelId as `${string}/${string}`, { input });
-      const imageUrl = Array.isArray(output) ? output[0] : output;
+      const rawOutput = Array.isArray(output) ? output[0] : output;
+      const imageUrl = toImageUrl(rawOutput);
 
       return {
         id: `flux-fill-${Date.now()}`,
         status: 'succeeded',
-        output: imageUrl as string,
+        output: imageUrl,
       };
     } catch (error) {
       logger.error('Replicate inpainting failed:', error);
