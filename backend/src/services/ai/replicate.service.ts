@@ -51,6 +51,8 @@ export interface FluxInpaintingParams {
   outputFormat?: 'webp' | 'jpg' | 'png';
   outputQuality?: number;
   seed?: number;
+  guidance?: number; // 1.5-100, default 60. Lower = preserve more of original
+  steps?: number; // 15-50, default 50
 }
 
 export interface ReplicatePrediction {
@@ -249,6 +251,8 @@ class ReplicateService {
         mask: params.mask,
         output_format: params.outputFormat || 'webp',
         output_quality: params.outputQuality || 80,
+        guidance: params.guidance ?? 30, // Lower value to preserve original image better
+        steps: params.steps ?? 50,
       };
 
       if (params.seed !== undefined) {
