@@ -1,11 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-
-import { useStore } from 'src/store/store';
 
 import {
   PromptEditor,
@@ -18,7 +14,6 @@ import {
 
 export function EditorPage() {
   const { t } = useTranslation();
-  const currentGeneration = useStore((state) => state.currentGeneration);
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
@@ -32,21 +27,6 @@ export function EditorPage() {
       <AspectRatioSelector />
       <PromptEditor />
       <GenerateButton />
-
-      {currentGeneration?.status === 'COMPLETED' && currentGeneration.generatedImageUrl && (
-        <Card sx={{ mt: 3, overflow: 'hidden' }}>
-          <Box
-            component="img"
-            src={currentGeneration.generatedImageUrl}
-            alt="Generated"
-            sx={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-            }}
-          />
-        </Card>
-      )}
     </Container>
   );
 }

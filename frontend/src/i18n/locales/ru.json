@@ -30,6 +30,10 @@
       "remove": "Удалить",
       "invalidType": "Неподдерживаемый формат. Используйте JPG, PNG или WebP",
       "fileTooLarge": "Файл слишком большой. Максимум 10MB"
+    },
+    "result": {
+      "mask": "Маска",
+      "download": "Скачать"
     }
   },
   "balance": {

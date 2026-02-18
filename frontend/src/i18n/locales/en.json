@@ -30,6 +30,10 @@
       "remove": "Remove",
       "invalidType": "Unsupported format. Use JPG, PNG or WebP",
       "fileTooLarge": "File too large. Maximum 10MB"
+    },
+    "result": {
+      "mask": "Mask",
+      "download": "Download"
     }
   },
   "balance": {

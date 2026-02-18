@@ -35,9 +35,11 @@ export interface GenerationSlice {
   setAspectRatio: (ratio: AspectRatio) => void;
 
   uploadSourceImage: (file: File) => Promise<void>;
+  setSourceImageUrl: (url: string) => void;
   clearSourceImage: () => void;
   setMaskImageUrl: (url: string | null) => void;
   clearMask: () => void;
+  clearCurrentGeneration: () => void;
 
   fetchTemplates: (category?: string) => Promise<void>;
   fetchModels: () => Promise<void>;
@@ -97,10 +99,12 @@ export const createGenerationSlice: StateCreator<GenerationSlice> = (set, get) =
     }
   },
 
+  setSourceImageUrl: (url) => set({ sourceImageUrl: url, maskImageUrl: null }),
   clearSourceImage: () => set({ sourceImageUrl: null, maskImageUrl: null }),
 
   setMaskImageUrl: (url) => set({ maskImageUrl: url }),
   clearMask: () => set({ maskImageUrl: null }),
+  clearCurrentGeneration: () => set({ currentGeneration: null }),
 
   fetchTemplates: async (category?: string) => {
     set({ isLoadingTemplates: true });
