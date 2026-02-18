@@ -1,9 +1,9 @@
-import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -19,11 +19,13 @@ import { MaskPreview, MaskEditorModal } from 'src/components/mask-editor';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+type AlertState = { message: string; severity: 'error' | 'success' | 'warning' | 'info' } | null;
+
 export function ImageUploader() {
   const { t } = useTranslation();
-  const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [maskEditorOpen, setMaskEditorOpen] = useState(false);
+  const [alert, setAlert] = useState<AlertState>(null);
 
   const sourceImageUrl = useStore((state) => state.sourceImageUrl);
   const maskImageUrl = useStore((state) => state.maskImageUrl);
@@ -38,12 +40,13 @@ export function ImageUploader() {
 
   const handleFileSelect = useCallback(
     async (file: File) => {
+      setAlert(null);
       if (!ALLOWED_TYPES.includes(file.type)) {
-        enqueueSnackbar(t('editor.imageUploader.invalidType'), { variant: 'error' });
+        setAlert({ message: t('editor.imageUploader.invalidType'), severity: 'error' });
         return;
       }
       if (file.size > MAX_FILE_SIZE) {
-        enqueueSnackbar(t('editor.imageUploader.fileTooLarge'), { variant: 'error' });
+        setAlert({ message: t('editor.imageUploader.fileTooLarge'), severity: 'error' });
         return;
       }
       try {
@@ -52,12 +55,11 @@ export function ImageUploader() {
         // DEBUG: Show debug info on error
         const debugInfo = apiService.getDebugInfo();
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-         
-        alert(`Upload Error:\n${errorMsg}\n\nDebug:\n${debugInfo}`);
-        enqueueSnackbar(t('errors.generic'), { variant: 'error' });
+        console.error(`Upload Error:\n${errorMsg}\n\nDebug:\n${debugInfo}`);
+        setAlert({ message: t('errors.generic'), severity: 'error' });
       }
     },
-    [uploadSourceImage, enqueueSnackbar, t]
+    [uploadSourceImage, t]
   );
 
   const handleDrop = useCallback(
@@ -124,17 +126,29 @@ export function ImageUploader() {
       clearCurrentGeneration();
       setMaskEditorOpen(true);
     } catch {
-      enqueueSnackbar(t('errors.generic'), { variant: 'error' });
+      setAlert({ message: t('errors.generic'), severity: 'error' });
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!currentGeneration?.generatedImageUrl) return;
 
-    const link = document.createElement('a');
-    link.href = currentGeneration.generatedImageUrl;
-    link.download = `generated-${Date.now()}.png`;
-    link.click();
+    try {
+      // Fetch image as blob to bypass CORS download restrictions
+      const response = await fetch(currentGeneration.generatedImageUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `generated-${Date.now()}.png`;
+      link.click();
+
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab if fetch fails
+      window.open(currentGeneration.generatedImageUrl, '_blank');
+    }
   };
 
   // Check if we should show the generated result
@@ -149,6 +163,17 @@ export function ImageUploader() {
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
         {t('editor.imageUploader.hint')}
       </Typography>
+
+      {alert && (
+        <Alert
+          variant="outlined"
+          severity={alert.severity}
+          onClose={() => setAlert(null)}
+          sx={{ mb: 1.5 }}
+        >
+          {alert.message}
+        </Alert>
+      )}
 
       <Card
         onDrop={!showResult ? handleDrop : undefined}

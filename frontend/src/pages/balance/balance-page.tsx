@@ -1,9 +1,9 @@
-import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -15,15 +15,17 @@ import { apiService } from 'src/services/api.service';
 
 const DEFAULT_AMOUNTS = [100, 300, 500, 1000];
 
+type AlertState = { message: string; severity: 'error' | 'success' | 'warning' | 'info' } | null;
+
 export function BalancePage() {
   const { t } = useTranslation();
-  const { enqueueSnackbar } = useSnackbar();
   const user = useStore((state) => state.user);
   const refreshBalance = useStore((state) => state.refreshBalance);
 
   const [amounts, setAmounts] = useState<number[]>(DEFAULT_AMOUNTS);
   const [isConfigured, setIsConfigured] = useState(true);
   const [loading, setLoading] = useState<number | null>(null);
+  const [alert, setAlert] = useState<AlertState>(null);
 
   // Загружаем допустимые суммы при монтировании
   useEffect(() => {
@@ -44,17 +46,18 @@ export function BalancePage() {
     const paymentSuccess = urlParams.get('payment');
 
     if (paymentSuccess === 'success') {
-      enqueueSnackbar(t('balance.paymentSuccess'), { variant: 'success' });
+      setAlert({ message: t('balance.paymentSuccess'), severity: 'success' });
       refreshBalance();
       // Очищаем URL параметры
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [enqueueSnackbar, refreshBalance, t]);
+  }, [refreshBalance, t]);
 
   const handleTopUp = useCallback(
     async (amount: number) => {
+      setAlert(null);
       if (!isConfigured) {
-        enqueueSnackbar(t('balance.paymentNotConfigured'), { variant: 'warning' });
+        setAlert({ message: t('balance.paymentNotConfigured'), severity: 'warning' });
         return;
       }
 
@@ -67,18 +70,18 @@ export function BalancePage() {
           // Редирект на страницу оплаты YooKassa
           window.location.href = payment.confirmationUrl;
         } else {
-          enqueueSnackbar(t('balance.paymentError'), { variant: 'error' });
+          setAlert({ message: t('balance.paymentError'), severity: 'error' });
         }
       } catch (error) {
-        enqueueSnackbar(
-          error instanceof Error ? error.message : t('balance.paymentError'),
-          { variant: 'error' }
-        );
+        setAlert({
+          message: error instanceof Error ? error.message : t('balance.paymentError'),
+          severity: 'error',
+        });
       } finally {
         setLoading(null);
       }
     },
-    [isConfigured, enqueueSnackbar, t]
+    [isConfigured, t]
   );
 
   return (
@@ -86,6 +89,17 @@ export function BalancePage() {
       <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
         {t('balance.title')}
       </Typography>
+
+      {alert && (
+        <Alert
+          variant="outlined"
+          severity={alert.severity}
+          onClose={() => setAlert(null)}
+          sx={{ mb: 2 }}
+        >
+          {alert.message}
+        </Alert>
+      )}
 
       <Box
         sx={[
